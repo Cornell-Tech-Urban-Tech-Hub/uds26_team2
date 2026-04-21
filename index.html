@@ -424,6 +424,7 @@
     <a href="#transformation">Transformation</a>
     <a href="#simulation">Simulation</a>
     <a href="#prediction">Prediction</a>
+    <a href="#overflow">Overflow</a>
     <a href="#engagement">Consensus</a>
   </div>
 </nav>
@@ -1175,6 +1176,100 @@
   </div>
 </section>
 
+<!-- ── Overflow Pressure Map ──────────────────────────────────────────────── -->
+<section id="overflow" style="padding: 80px 0; background: #0f0f0f; color: #fff;">
+  <div class="container">
+    <div class="phase-badge" style="background:rgba(220,50,40,.15); color:#ff6b6b;">Overflow Pressure</div>
+    <h2 class="section-title" style="color:#fff;">What Happens When There's No Room?</h2>
+    <p class="section-subtitle" style="color:rgba(255,255,255,.5);">
+      Cars that can't find parking in the BID don't disappear — they spill outward into surrounding
+      neighborhoods, turning a Gowanus problem into a Carroll Gardens, Park Slope, and Red Hook problem.
+      The map below shows estimated overflow pressure radiating out from the BID under each scenario.
+    </p>
+    <div style="height:4px; width:48px; background:#ef4444; border-radius:2px; margin:24px 0 40px;"></div>
+
+    <!-- Scenario toggle -->
+    <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button onclick="setOverflowScenario('baseline')" id="btn-baseline"
+        style="padding:10px 22px; border-radius:100px; border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:#2196f3; color:#fff;">
+        2024 Baseline — Stable
+      </button>
+      <button onclick="setOverflowScenario('2029_no_action')" id="btn-2029_no_action"
+        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
+        2029 No Action — Stressed
+      </button>
+      <button onclick="setOverflowScenario('2034_no_action')" id="btn-2034_no_action"
+        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
+        2034 No Action — Crisis
+      </button>
+      <button onclick="setOverflowScenario('2034_garages')" id="btn-2034_garages"
+        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
+        2034 Garage Only — Resolved
+      </button>
+    </div>
+
+    <!-- Stats bar -->
+    <div id="overflow-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">BID Occupancy</div>
+        <div id="stat-occ" style="font-size:28px; font-weight:800; color:#2196f3;">~90%</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Overflow Cars / hr</div>
+        <div id="stat-overflow" style="font-size:28px; font-weight:800; color:#ef4444;">~12</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Streets Affected</div>
+        <div id="stat-streets" style="font-size:28px; font-weight:800; color:#f59e0b;">Low</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Pressure Radius</div>
+        <div id="stat-radius" style="font-size:28px; font-weight:800; color:#a78bfa;">~1 block</div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div style="position:relative; border-radius:12px; overflow:hidden; box-shadow:0 4px 40px rgba(0,0,0,.5);">
+      <div id="overflow-map" style="height:560px; background:#1a1a2e;"></div>
+      <!-- Legend -->
+      <div style="position:absolute; bottom:20px; right:20px; background:rgba(15,15,15,.9); backdrop-filter:blur(8px); border-radius:10px; padding:16px 20px; border:1px solid rgba(255,255,255,.1); min-width:200px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:.1em; color:#aaa; text-transform:uppercase; margin-bottom:12px;">Overflow Pressure</div>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:#ccc;">
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#ef4444;border-radius:3px;"></span>Critical (inside BID)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#f97316;border-radius:3px;"></span>High (&lt; 200m)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#eab308;border-radius:3px;"></span>Medium (200–500m)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#22c55e;border-radius:3px;"></span>Low (&gt; 500m)</div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;"><span style="display:inline-block;width:10px;height:10px;background:#fff;border-radius:50%;opacity:.8;"></span>Overflow car</div>
+        </div>
+      </div>
+      <!-- Animated label -->
+      <div id="overflow-label" style="position:absolute; top:20px; left:20px; background:rgba(239,68,68,.9); color:#fff; padding:8px 16px; border-radius:100px; font-size:13px; font-weight:700; display:none;">
+        ● Live overflow animation
+      </div>
+    </div>
+
+    <!-- Explanation -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;">
+      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #ef4444;">
+        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#ef4444; margin-bottom:12px;">Without Garage Policy</h4>
+        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
+          By 2034, an estimated <strong style="color:#fff;">80–120 cars per hour</strong> are displaced from the BID during peak times.
+          They cruise into Carroll Gardens, Park Slope, and Red Hook — streets not designed to absorb that demand.
+          Residents of neighboring blocks lose parking they've relied on for decades.
+        </p>
+      </div>
+      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #22c55e;">
+        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#22c55e; margin-bottom:12px;">With Garage Policy</h4>
+        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
+          The 2034 garage-only scenario reduces overflow to near zero. Cars that can't find a garage space
+          leave the area entirely rather than circling neighboring streets. The pressure radius collapses
+          from <strong style="color:#fff;">500m+ to under 50m</strong> — contained within the BID itself.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── Footer ─────────────────────────────────────────────────────────────── -->
 <footer>
   <div>
@@ -1345,6 +1440,252 @@ new Chart(document.getElementById('chartGarage'), {
     }
   }
 });
+
+// ── Overflow Pressure Map ─────────────────────────────────────────────────────
+const overflowMap = L.map('overflow-map', {
+  zoomControl: true, scrollWheelZoom: false
+}).setView([40.6726, -73.9897], 14);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19
+}).addTo(overflowMap);
+
+// BID centroid for distance calculations
+const BID_CENTER = L.latLng(40.6726, -73.9897);
+
+// Scenario configurations
+const SCENARIOS = {
+  baseline: {
+    bidColor: '#2196f3', bidOpacity: 0.15,
+    overflowPerHr: 12, label: '2024 Baseline — Stable',
+    occ: '~90%', streets: 'Minimal', radius: '~1 block',
+    occColor: '#2196f3',
+    pressureMultiplier: 0.1,   // how strongly roads outside are colored
+    particleCount: 3,
+    statColor: '#2196f3'
+  },
+  '2029_no_action': {
+    bidColor: '#f59e0b', bidOpacity: 0.2,
+    overflowPerHr: 45, label: '2029 No Action — Stressed',
+    occ: '~97%', streets: 'Moderate', radius: '~3 blocks',
+    occColor: '#f59e0b',
+    pressureMultiplier: 0.5,
+    particleCount: 12,
+    statColor: '#f59e0b'
+  },
+  '2034_no_action': {
+    bidColor: '#ef4444', bidOpacity: 0.3,
+    overflowPerHr: 105, label: '2034 No Action — Crisis',
+    occ: '~99%', streets: 'Severe', radius: '~6 blocks',
+    occColor: '#ef4444',
+    pressureMultiplier: 1.0,
+    particleCount: 28,
+    statColor: '#ef4444'
+  },
+  '2034_garages': {
+    bidColor: '#22c55e', bidOpacity: 0.12,
+    overflowPerHr: 4, label: '2034 Garage Only — Resolved',
+    occ: '0% (street)', streets: 'None', radius: 'Contained',
+    occColor: '#22c55e',
+    pressureMultiplier: 0.02,
+    particleCount: 1,
+    statColor: '#22c55e'
+  }
+};
+
+let currentScenario = 'baseline';
+let roadsLayer = null;
+let bidLayer = null;
+let particleLayer = null;
+let particleAnimId = null;
+let particles = [];
+let surroundingRoadsData = null;
+let bidBoundaryData = null;
+
+// Pressure → color (green=low, yellow=med, orange=high, red=critical)
+function pressureColor(normalizedDist, multiplier) {
+  // normalizedDist: 0=inside BID, 1=far away
+  // multiplier: scenario severity
+  const p = Math.max(0, 1 - normalizedDist) * multiplier;
+  if (p > 0.8)  return { color: '#ef4444', weight: 4, opacity: 0.95 };
+  if (p > 0.55) return { color: '#f97316', weight: 3, opacity: 0.85 };
+  if (p > 0.3)  return { color: '#eab308', weight: 2.5, opacity: 0.75 };
+  if (p > 0.08) return { color: '#22c55e', weight: 2, opacity: 0.55 };
+  return { color: '#374151', weight: 1.5, opacity: 0.25 };
+}
+
+function distFromBID(latlng) {
+  return BID_CENTER.distanceTo(latlng); // metres
+}
+
+async function initOverflowMap() {
+  // Load surrounding roads
+  surroundingRoadsData = await loadLayer('data/surrounding_roads.geojson');
+  bidBoundaryData      = await loadLayer('data/bid_boundary.geojson');
+  renderOverflowScenario('baseline');
+}
+
+function renderOverflowScenario(scenarioKey) {
+  const sc = SCENARIOS[scenarioKey];
+
+  // Clear existing
+  if (roadsLayer)  { overflowMap.removeLayer(roadsLayer);  roadsLayer = null; }
+  if (bidLayer)    { overflowMap.removeLayer(bidLayer);     bidLayer = null; }
+  if (particleLayer){ overflowMap.removeLayer(particleLayer); particleLayer = null; }
+  if (particleAnimId) { cancelAnimationFrame(particleAnimId); particles = []; }
+
+  // BID boundary fill
+  if (bidBoundaryData) {
+    bidLayer = L.geoJSON(bidBoundaryData, {
+      style: {
+        color: sc.bidColor, weight: 3,
+        fillColor: sc.bidColor, fillOpacity: sc.bidOpacity,
+        dashArray: scenarioKey === '2034_garages' ? '8,4' : null
+      }
+    }).addTo(overflowMap);
+  }
+
+  // Surrounding roads colored by pressure + distance
+  if (surroundingRoadsData) {
+    roadsLayer = L.geoJSON(surroundingRoadsData, {
+      style: feature => {
+        const coords = feature.geometry.coordinates;
+        const midIdx = Math.floor(coords.length / 2);
+        const mid = Array.isArray(coords[midIdx][0])
+          ? coords[midIdx][0] : coords[midIdx];
+        const latlng = L.latLng(mid[1], mid[0]);
+        const dist = distFromBID(latlng);
+        // Normalize: 0 = at BID centre, 1 = 800m away
+        const norm = Math.min(1, dist / 800);
+        return pressureColor(norm, sc.pressureMultiplier);
+      },
+      onEachFeature: (f, layer) => {
+        const coords = f.geometry.coordinates;
+        const midIdx = Math.floor(coords.length / 2);
+        const mid = Array.isArray(coords[midIdx][0]) ? coords[midIdx][0] : coords[midIdx];
+        const dist = Math.round(distFromBID(L.latLng(mid[1], mid[0])));
+        const pressure = Math.max(0, (1 - dist/800) * sc.pressureMultiplier * 100).toFixed(0);
+        layer.bindTooltip(
+          `<strong>${f.properties.name || 'Street'}</strong><br>
+           Distance from BID: ${dist}m<br>
+           Overflow pressure: ${pressure}%`,
+          { sticky: true, className: 'overflow-tooltip' }
+        );
+      }
+    }).addTo(overflowMap);
+  }
+
+  // Animated overflow particles
+  if (sc.particleCount > 0) {
+    document.getElementById('overflow-label').style.display = 'block';
+    spawnParticles(sc);
+  } else {
+    document.getElementById('overflow-label').style.display = 'none';
+  }
+
+  // Update stats
+  document.getElementById('stat-occ').textContent = sc.occ;
+  document.getElementById('stat-occ').style.color = sc.statColor;
+  document.getElementById('stat-overflow').textContent = `~${sc.overflowPerHr}`;
+  document.getElementById('stat-streets').textContent = sc.streets;
+  document.getElementById('stat-radius').textContent = sc.radius;
+}
+
+// BID boundary approximate ring of spawn points
+const BID_RING = [
+  [40.6755, -73.9920], [40.6748, -73.9905], [40.6740, -73.9892],
+  [40.6732, -73.9882], [40.6720, -73.9876], [40.6708, -73.9880],
+  [40.6698, -73.9888], [40.6692, -73.9900], [40.6690, -73.9916],
+  [40.6695, -73.9930], [40.6705, -73.9940], [40.6718, -73.9945],
+  [40.6730, -73.9942], [40.6742, -73.9935], [40.6752, -73.9928],
+];
+
+function spawnParticles(sc) {
+  particles = [];
+  particleLayer = L.layerGroup().addTo(overflowMap);
+
+  // Directions cars drift outward from BID
+  const directions = [
+    { dlat: 0.0004, dlng: -0.0006 }, // Carroll Gardens (west)
+    { dlat: 0.0005, dlng:  0.0003 }, // Park Slope (north-east)
+    { dlat: -0.0004, dlng:-0.0004 }, // Red Hook (south-west)
+    { dlat:  0.0003, dlng:  0.0006 }, // Gowanus north
+    { dlat: -0.0005, dlng:  0.0004 }, // south
+  ];
+
+  for (let i = 0; i < sc.particleCount; i++) {
+    const spawn = BID_RING[Math.floor(Math.random() * BID_RING.length)];
+    const dir   = directions[i % directions.length];
+    const speed = 0.6 + Math.random() * 0.8;
+    const marker = L.circleMarker([spawn[0], spawn[1]], {
+      radius: 5, fillColor: '#ffffff', color: 'rgba(255,255,255,.3)',
+      weight: 1, fillOpacity: 0.9
+    }).addTo(particleLayer);
+    marker.bindTooltip('Overflow car — displaced from BID', { sticky: true });
+    particles.push({
+      marker, lat: spawn[0], lng: spawn[1],
+      dlat: dir.dlat * speed, dlng: dir.dlng * speed,
+      life: 0, maxLife: 80 + Math.floor(Math.random() * 60),
+      delay: Math.floor(Math.random() * 100)
+    });
+  }
+
+  let frame = 0;
+  function animate() {
+    frame++;
+    particles.forEach(p => {
+      if (frame < p.delay) return;
+      p.life++;
+      const progress = p.life / p.maxLife;
+      p.lat += p.dlat * 0.012;
+      p.lng += p.dlng * 0.012;
+      const opacity = progress < 0.2
+        ? progress / 0.2
+        : progress > 0.75
+          ? (1 - progress) / 0.25
+          : 1;
+      p.marker.setLatLng([p.lat, p.lng]);
+      p.marker.setStyle({ fillOpacity: opacity * 0.9 });
+
+      if (p.life >= p.maxLife) {
+        // Reset particle to a new spawn point
+        const spawn = BID_RING[Math.floor(Math.random() * BID_RING.length)];
+        p.lat = spawn[0]; p.lng = spawn[1];
+        p.life = 0;
+        p.delay = Math.floor(Math.random() * 20);
+      }
+    });
+    particleAnimId = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+window.setOverflowScenario = function(key) {
+  currentScenario = key;
+  // Update button styles
+  Object.keys(SCENARIOS).forEach(k => {
+    const btn = document.getElementById(`btn-${k}`);
+    if (!btn) return;
+    if (k === key) {
+      btn.style.background = SCENARIOS[k].statColor;
+      btn.style.color = '#fff';
+      btn.style.border = 'none';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = '#aaa';
+      btn.style.border = '2px solid #444';
+    }
+  });
+  renderOverflowScenario(key);
+};
+
+// Add tooltip CSS
+const tooltipStyle = document.createElement('style');
+tooltipStyle.textContent = `.overflow-tooltip { background:rgba(15,15,15,.95); color:#fff; border:1px solid rgba(255,255,255,.15); font-size:12px; border-radius:8px; }
+.overflow-tooltip::before { border-top-color: rgba(255,255,255,.15); }`;
+document.head.appendChild(tooltipStyle);
+
+initOverflowMap();
 </script>
 </body>
 </html>
