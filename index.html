@@ -423,8 +423,8 @@
     <a href="#insight">Insight</a>
     <a href="#transformation">Transformation</a>
     <a href="#simulation">Simulation</a>
-    <a href="#prediction">Prediction</a>
     <a href="#overflow">Overflow</a>
+    <a href="#prediction">Prediction</a>
     <a href="#engagement">Consensus</a>
   </div>
 </nav>
@@ -939,6 +939,98 @@
   </div>
 </section>
 
+<!-- ── Overflow Pressure Map ──────────────────────────────────────────────── -->
+<section id="overflow" style="padding: 80px 0; background: #0f0f0f; color: #fff;">
+  <div class="container">
+    <div class="phase-badge" style="background:rgba(220,50,40,.15); color:#ff6b6b;">Overflow Pressure</div>
+    <h2 class="section-title" style="color:#fff;">What Happens When There's No Room?</h2>
+    <p class="section-subtitle" style="color:rgba(255,255,255,.5);">
+      Cars that can't find parking in the BID don't disappear — they spill outward into surrounding
+      neighborhoods, turning a Gowanus problem into a Carroll Gardens, Park Slope, and Red Hook problem.
+      The map below shows estimated overflow pressure radiating out from the BID under each scenario.
+    </p>
+    <div style="height:4px; width:48px; background:#ef4444; border-radius:2px; margin:24px 0 40px;"></div>
+
+    <!-- Scenario toggle -->
+    <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+      <button onclick="setOverflowScenario('baseline')" id="btn-baseline"
+        style="padding:10px 22px; border-radius:100px; border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:#2196f3; color:#fff;">
+        2024 Baseline — Stable
+      </button>
+      <button onclick="setOverflowScenario('2029_no_action')" id="btn-2029_no_action"
+        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
+        2029 No Action — Stressed
+      </button>
+      <button onclick="setOverflowScenario('2034_no_action')" id="btn-2034_no_action"
+        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
+        2034 No Action — Crisis
+      </button>
+      <button onclick="setOverflowScenario('2034_garages')" id="btn-2034_garages"
+        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
+        2034 Garage Only — Resolved
+      </button>
+    </div>
+
+    <!-- Stats bar -->
+    <div id="overflow-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">BID Occupancy</div>
+        <div id="stat-occ" style="font-size:28px; font-weight:800; color:#2196f3;">~90%</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Overflow Cars / hr</div>
+        <div id="stat-overflow" style="font-size:28px; font-weight:800; color:#ef4444;">~12</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Streets Affected</div>
+        <div id="stat-streets" style="font-size:28px; font-weight:800; color:#f59e0b;">Low</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Pressure Radius</div>
+        <div id="stat-radius" style="font-size:28px; font-weight:800; color:#a78bfa;">~1 block</div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div style="position:relative; border-radius:12px; overflow:hidden; box-shadow:0 4px 40px rgba(0,0,0,.5);">
+      <div id="overflow-map" style="height:560px; background:#1a1a2e;"></div>
+      <div style="position:absolute; bottom:20px; right:20px; background:rgba(15,15,15,.9); backdrop-filter:blur(8px); border-radius:10px; padding:16px 20px; border:1px solid rgba(255,255,255,.1); min-width:200px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:.1em; color:#aaa; text-transform:uppercase; margin-bottom:12px;">Overflow Pressure</div>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:#ccc;">
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#ef4444;border-radius:3px;"></span>Critical (inside BID)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#f97316;border-radius:3px;"></span>High (&lt; 200m)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#eab308;border-radius:3px;"></span>Medium (200–500m)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#22c55e;border-radius:3px;"></span>Low (&gt; 500m)</div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;"><span style="display:inline-block;width:10px;height:10px;background:#fff;border-radius:50%;opacity:.8;"></span>Overflow car</div>
+        </div>
+      </div>
+      <div id="overflow-label" style="position:absolute; top:20px; left:20px; background:rgba(239,68,68,.9); color:#fff; padding:8px 16px; border-radius:100px; font-size:13px; font-weight:700; display:none;">
+        ● Live overflow animation
+      </div>
+    </div>
+
+    <!-- Explanation -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;">
+      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #ef4444;">
+        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#ef4444; margin-bottom:12px;">Without Garage Policy</h4>
+        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
+          By 2034, an estimated <strong style="color:#fff;">80–120 cars per hour</strong> are displaced from the BID during peak times.
+          They cruise into Carroll Gardens, Park Slope, and Red Hook — streets not designed to absorb that demand.
+          Residents of neighboring blocks lose parking they've relied on for decades.
+        </p>
+      </div>
+      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #22c55e;">
+        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#22c55e; margin-bottom:12px;">With Garage Policy</h4>
+        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
+          The 2034 garage-only scenario reduces overflow to near zero. Cars that can't find a garage space
+          leave the area entirely rather than circling neighboring streets. The pressure radius collapses
+          from <strong style="color:#fff;">500m+ to under 50m</strong> — contained within the BID itself.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── Prediction Charts ───────────────────────────────────────────────────── -->
 <section id="prediction">
   <div class="container">
@@ -1171,100 +1263,6 @@
         <div class="step-num">04</div>
         <div class="step-title" style="color:var(--green);">Decide Together</div>
         <div class="step-desc">Design and showcase live simulation demos for the public, in preparation of community board presentations.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── Overflow Pressure Map ──────────────────────────────────────────────── -->
-<section id="overflow" style="padding: 80px 0; background: #0f0f0f; color: #fff;">
-  <div class="container">
-    <div class="phase-badge" style="background:rgba(220,50,40,.15); color:#ff6b6b;">Overflow Pressure</div>
-    <h2 class="section-title" style="color:#fff;">What Happens When There's No Room?</h2>
-    <p class="section-subtitle" style="color:rgba(255,255,255,.5);">
-      Cars that can't find parking in the BID don't disappear — they spill outward into surrounding
-      neighborhoods, turning a Gowanus problem into a Carroll Gardens, Park Slope, and Red Hook problem.
-      The map below shows estimated overflow pressure radiating out from the BID under each scenario.
-    </p>
-    <div style="height:4px; width:48px; background:#ef4444; border-radius:2px; margin:24px 0 40px;"></div>
-
-    <!-- Scenario toggle -->
-    <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button onclick="setOverflowScenario('baseline')" id="btn-baseline"
-        style="padding:10px 22px; border-radius:100px; border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:#2196f3; color:#fff;">
-        2024 Baseline — Stable
-      </button>
-      <button onclick="setOverflowScenario('2029_no_action')" id="btn-2029_no_action"
-        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
-        2029 No Action — Stressed
-      </button>
-      <button onclick="setOverflowScenario('2034_no_action')" id="btn-2034_no_action"
-        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
-        2034 No Action — Crisis
-      </button>
-      <button onclick="setOverflowScenario('2034_garages')" id="btn-2034_garages"
-        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
-        2034 Garage Only — Resolved
-      </button>
-    </div>
-
-    <!-- Stats bar -->
-    <div id="overflow-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">BID Occupancy</div>
-        <div id="stat-occ" style="font-size:28px; font-weight:800; color:#2196f3;">~90%</div>
-      </div>
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Overflow Cars / hr</div>
-        <div id="stat-overflow" style="font-size:28px; font-weight:800; color:#ef4444;">~12</div>
-      </div>
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Streets Affected</div>
-        <div id="stat-streets" style="font-size:28px; font-weight:800; color:#f59e0b;">Low</div>
-      </div>
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Pressure Radius</div>
-        <div id="stat-radius" style="font-size:28px; font-weight:800; color:#a78bfa;">~1 block</div>
-      </div>
-    </div>
-
-    <!-- Map -->
-    <div style="position:relative; border-radius:12px; overflow:hidden; box-shadow:0 4px 40px rgba(0,0,0,.5);">
-      <div id="overflow-map" style="height:560px; background:#1a1a2e;"></div>
-      <!-- Legend -->
-      <div style="position:absolute; bottom:20px; right:20px; background:rgba(15,15,15,.9); backdrop-filter:blur(8px); border-radius:10px; padding:16px 20px; border:1px solid rgba(255,255,255,.1); min-width:200px;">
-        <div style="font-size:11px; font-weight:700; letter-spacing:.1em; color:#aaa; text-transform:uppercase; margin-bottom:12px;">Overflow Pressure</div>
-        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:#ccc;">
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#ef4444;border-radius:3px;"></span>Critical (inside BID)</div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#f97316;border-radius:3px;"></span>High (&lt; 200m)</div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#eab308;border-radius:3px;"></span>Medium (200–500m)</div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#22c55e;border-radius:3px;"></span>Low (&gt; 500m)</div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;"><span style="display:inline-block;width:10px;height:10px;background:#fff;border-radius:50%;opacity:.8;"></span>Overflow car</div>
-        </div>
-      </div>
-      <!-- Animated label -->
-      <div id="overflow-label" style="position:absolute; top:20px; left:20px; background:rgba(239,68,68,.9); color:#fff; padding:8px 16px; border-radius:100px; font-size:13px; font-weight:700; display:none;">
-        ● Live overflow animation
-      </div>
-    </div>
-
-    <!-- Explanation -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;">
-      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #ef4444;">
-        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#ef4444; margin-bottom:12px;">Without Garage Policy</h4>
-        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
-          By 2034, an estimated <strong style="color:#fff;">80–120 cars per hour</strong> are displaced from the BID during peak times.
-          They cruise into Carroll Gardens, Park Slope, and Red Hook — streets not designed to absorb that demand.
-          Residents of neighboring blocks lose parking they've relied on for decades.
-        </p>
-      </div>
-      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #22c55e;">
-        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#22c55e; margin-bottom:12px;">With Garage Policy</h4>
-        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
-          The 2034 garage-only scenario reduces overflow to near zero. Cars that can't find a garage space
-          leave the area entirely rather than circling neighboring streets. The pressure radius collapses
-          from <strong style="color:#fff;">500m+ to under 50m</strong> — contained within the BID itself.
-        </p>
       </div>
     </div>
   </div>
