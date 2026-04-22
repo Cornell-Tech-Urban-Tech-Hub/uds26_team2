@@ -164,6 +164,26 @@
   }
   .stat-num { font-size: 48px; font-weight: 800; line-height: 1; margin-bottom: 8px; color: var(--accent-color); }
   .stat-label { font-size: 14px; color: var(--gray-600); }
+  .cars-grid { display: grid; grid-template-columns: 1fr .95fr 1fr; gap: 20px; margin-bottom: 48px; align-items: stretch; }
+  .cars-col { display: grid; gap: 20px; }
+  .cars-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .cars-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent-color);
+  }
+  .cars-metric { font-size: 44px; font-weight: 800; line-height: 1; margin-bottom: 8px; color: var(--accent-color); }
+  .cars-copy { font-size: 14px; color: var(--gray-600); line-height: 1.6; }
 
   /* ── Scenario sections ── */
   .scenario-section { padding: 80px 0; border-bottom: 1px solid var(--gray-100); }
@@ -401,6 +421,7 @@
   @media (max-width: 900px) {
     .scenario-layout, .scenario-layout.reverse { grid-template-columns: 1fr; direction: ltr; }
     .principles-grid { grid-template-columns: 1fr; }
+    .cars-grid { grid-template-columns: 1fr; }
     .charts-grid { grid-template-columns: 1fr; }
     .stat-cards { grid-template-columns: 1fr; }
     .timeline { grid-template-columns: 1fr; }
@@ -523,22 +544,38 @@
       </p>
     </div>
 
-    <div class="stat-cards">
-      <div class="stat-card" style="--accent-color: var(--blue);">
-        <div class="stat-num">2,075</div>
-        <div class="stat-label">Real on-street spots mapped in the BID — sourced from NYC open data and field-verified shapefiles</div>
+    <div class="cars-grid">
+      <div class="cars-col">
+        <div class="cars-card" style="--accent-color: var(--blue);">
+          <div class="cars-metric">2,075</div>
+          <div class="cars-copy">On-street parking spots today in the BID.</div>
+        </div>
+        <div class="cars-card" style="--accent-color: var(--blue);">
+          <div class="cars-metric">90%</div>
+          <div class="cars-copy">Current midday occupancy.</div>
+        </div>
       </div>
-      <div class="stat-card" style="--accent-color: var(--red);">
-        <div class="stat-num">1,940</div>
-        <div class="stat-label">On-street spots by 2035, per <a href="https://www.nyc.gov/assets/planning/download/pdf/applicants/env-review/gowanus/14-feis.pdf" target="_blank" style="color: inherit; text-decoration: underline;">NYC FEIS, Table 14-1</a></div>
+
+      <div class="cars-col">
+        <div class="cars-card" style="--accent-color: var(--gold);">
+          <div class="cars-metric">+8,000</div>
+          <div class="cars-copy">New residential units approved under the 2021 rezoning plan.</div>
+        </div>
+        <div class="cars-card" style="--accent-color: var(--gold);">
+          <div class="cars-metric" style="font-size: 20px; letter-spacing: .04em;">NO MINIMUM</div>
+          <div class="cars-copy">parking is required in new residential buildings.</div>
+        </div>
       </div>
-      <div class="stat-card" style="--accent-color: var(--gold);">
-        <div class="stat-num">90%</div>
-        <div class="stat-label">Occupancy by midday. Gowanus is already near saturation before the influx of new residents</div>
-      </div>
-      <div class="stat-card" style="--accent-color: var(--red);">
-        <div class="stat-num">+8,000</div>
-        <div class="stat-label">New residential units approved under the 2021 rezoning, each bringing additional parking demand to the same streets</div>
+
+      <div class="cars-col">
+        <div class="cars-card" style="--accent-color: var(--red);">
+          <div class="cars-metric">1,940</div>
+          <div class="cars-copy">Projected on-street spots by 2035, per <a href="https://www.nyc.gov/assets/planning/download/pdf/applicants/env-review/gowanus/14-feis.pdf" target="_blank" style="color: inherit; text-decoration: underline;">NYC FEIS, Table 14-1</a>.</div>
+        </div>
+        <div class="cars-card" style="--accent-color: var(--red);">
+          <div class="cars-metric">127%</div>
+          <div class="cars-copy">Projected occupancy after rezoning in 2035, per <a href="https://www.nyc.gov/assets/planning/download/pdf/applicants/env-review/gowanus/14-feis.pdf" target="_blank" style="color: inherit; text-decoration: underline;">NYC FEIS, Table 14-1</a>.</div>
+        </div>
       </div>
     </div>
 
