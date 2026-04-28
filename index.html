@@ -492,27 +492,110 @@ section{padding:104px 0;position:relative}
 
 /* ── Engagement ── */
 #engagement{background:var(--cream)}
-.buyin-wrap{margin-top:40px}
-.buyin-tabs-bar{display:flex;gap:0;border-bottom:1px solid var(--rule)}
-.buyin-tab{
-  background:none;border:none;padding:12px 24px 12px 0;
-  font-family:var(--font-ui);font-size:13px;font-weight:700;
-  color:var(--dust);cursor:pointer;border-bottom:2px solid transparent;
-  margin-bottom:-1px;transition:color .2s;
+.consensus-sim{
+  margin-top:42px;display:grid;gap:24px;
 }
-.buyin-tab-active,.buyin-tab:hover{color:var(--ink)}
-.buyin-tab-active{border-bottom-color:var(--sage)!important}
-.buyin-panels{height:260px;overflow:hidden;position:relative}
-.buyin-panel{
-  background:var(--white);border-radius:0 0 8px 8px;border:1px solid var(--rule);
-  border-top:none;padding:32px;
+.consensus-card{
+  background:var(--white);border:1px solid var(--rule);border-radius:8px;
+  padding:28px;box-shadow:0 6px 26px rgba(28,23,18,.05);
 }
-.buyin-panel-title{font-family:var(--font-ui);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:14px}
-.buyin-panel p{font-size:13px;color:var(--smoke);line-height:1.75;margin-bottom:10px}
-.buyin-panel p strong{color:var(--ink)}
-.buyin-panel ul{list-style:none;display:flex;flex-direction:column;gap:8px}
-.buyin-panel li{font-size:13px;color:var(--smoke);line-height:1.7;padding-left:18px;position:relative}
-.buyin-panel li span{position:absolute;left:0;color:var(--sage);font-weight:700}
+.consensus-header{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:18px;
+  flex-wrap:wrap;margin-bottom:20px;
+}
+.consensus-card h3{
+  font-family:var(--font-ui);font-size:22px;font-weight:700;color:var(--ink);
+  margin-bottom:6px;letter-spacing:.01em;
+}
+.consensus-card p{font-size:14px;color:var(--smoke);line-height:1.75}
+.consensus-stats{display:flex;gap:10px;flex-wrap:wrap}
+.consensus-pill{
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;padding:7px 10px;border-radius:100px;
+}
+.consensus-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.consensus-btn{
+  border:1px solid var(--rule);background:var(--canvas);color:var(--ink);
+  border-radius:100px;padding:10px 14px;font-family:var(--font-ui);font-size:12px;
+  font-weight:700;cursor:pointer;transition:background .2s,color .2s,border-color .2s;
+}
+.consensus-btn:hover{background:var(--cream-d)}
+.consensus-btn.active-protect{background:var(--sage);border-color:var(--sage);color:#fff}
+.consensus-btn.active-remove{background:var(--red);border-color:var(--red);color:#fff}
+.consensus-vote-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:start}
+.consensus-map-card{
+  background:var(--canvas);border:1px solid var(--rule);border-radius:8px;padding:12px;
+}
+.consensus-map-wrap{position:relative;width:100%;overflow:hidden;border-radius:6px;background:var(--cream-d)}
+.consensus-map-wrap img{width:100%;display:block}
+.consensus-spot{
+  position:absolute;width:23px;height:23px;border-radius:50%;border:2px solid #fff;
+  transform:translate(-50%,-50%);cursor:pointer;color:#fff;font-family:var(--font-mono);
+  font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.18);transition:transform .15s,box-shadow .15s;
+}
+.consensus-spot:hover,.consensus-spot.selected{transform:translate(-50%,-50%) scale(1.12);box-shadow:0 0 0 4px rgba(28,23,18,.16)}
+.consensus-side{
+  background:var(--canvas);border:1px solid var(--rule);border-radius:8px;padding:20px;
+  position:sticky;top:76px;
+}
+.consensus-selected-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.consensus-selected-badge{
+  background:var(--dark);color:#fff;border-radius:100px;padding:7px 12px;
+  font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+}
+.consensus-state-badge{
+  border-radius:100px;padding:7px 12px;font-family:var(--font-mono);font-size:10px;
+  font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+}
+.consensus-actions{display:grid;grid-template-columns:1fr;gap:9px;margin:16px 0}
+.consensus-action{
+  border:none;border-radius:8px;padding:12px 14px;font-family:var(--font-ui);
+  font-size:13px;font-weight:700;cursor:pointer;
+}
+.consensus-action.protect{background:var(--sage);color:#fff}
+.consensus-action.remove{background:var(--red);color:#fff}
+.consensus-action.neutral{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.consensus-label{
+  display:block;font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;margin:18px 0 8px;color:var(--smoke);
+}
+.consensus-textarea{
+  width:100%;min-height:116px;border-radius:8px;border:1px solid var(--rule);
+  padding:12px;font-family:var(--font-body);font-size:14px;resize:vertical;color:var(--ink);
+  background:#fff;
+}
+.consensus-comments{border-top:1px solid var(--rule);padding-top:16px;margin-top:18px}
+.consensus-comments h4{
+  font-family:var(--font-ui);font-size:15px;font-weight:700;margin-bottom:10px;color:var(--ink);
+}
+.consensus-comment-list{display:grid;gap:10px;max-height:300px;overflow:auto}
+.consensus-comment-card{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:12px}
+.consensus-comment-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:5px;font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.consensus-comment-card p{font-size:13px;line-height:1.6;margin:0}
+.approach-layout{display:grid;grid-template-columns:.92fr 1.08fr;gap:18px}
+.approach-stack{display:grid;gap:12px}
+.approach-selector{
+  display:grid;grid-template-columns:7px 1fr;gap:14px;align-items:stretch;text-align:left;
+  border:1px solid var(--rule);border-radius:8px;background:var(--canvas);
+  padding:16px;cursor:pointer;transition:border-color .2s,background .2s;
+}
+.approach-selector.active{background:#fff}
+.approach-accent{border-radius:100px;width:7px}
+.approach-title{display:block;font-family:var(--font-ui);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.approach-short{display:block;font-size:13px;color:var(--smoke);line-height:1.55}
+.approach-detail{background:var(--canvas);border:1px solid var(--rule);border-radius:8px;padding:22px}
+.approach-bar{width:64px;height:5px;border-radius:100px;margin-bottom:14px}
+.approach-detail h4{font-family:var(--font-ui);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.approach-detail ul{padding-left:18px;margin-top:12px;color:var(--smoke);font-size:14px;line-height:1.7}
+.support-grid,.community-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.support-card,.community-card{
+  background:var(--canvas);border:1px solid var(--rule);border-radius:8px;overflow:hidden;
+}
+.support-card{padding:20px}
+.support-card h4,.community-card h4{font-family:var(--font-ui);font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.community-card img{width:100%;height:220px;object-fit:cover;display:block;background:var(--cream-d)}
+.community-card-body{padding:18px}
 .process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
 .process-step{
   background:var(--white);border-radius:8px;border:1px solid var(--rule);padding:24px;position:relative;overflow:hidden;
@@ -546,7 +629,8 @@ footer{
 @media(max-width:960px){
   .intro-grid,.cars-grid,.scenario-layout,.scenario-layout.reverse,
   .charts-grid,.timeline,.principles-grid,.overflow-explanation,
-  .tale-grid,.process-steps,.revenue-flow{
+  .tale-grid,.process-steps,.revenue-flow,.consensus-vote-grid,
+  .approach-layout,.support-grid,.community-grid{
     grid-template-columns:1fr;direction:ltr
   }
   .scenario-layout.reverse>*{direction:ltr}
@@ -559,11 +643,14 @@ footer{
   .hero-stats{flex-direction:column}
   .hero-stat{padding:16px 0;margin-right:0;border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
   #overflow-stats{grid-template-columns:1fr 1fr}
+  .consensus-side{position:static}
 }
 @media(max-width:600px){
   .scenario-metrics{grid-template-columns:1fr}
-  .process-steps{grid-template-columns:1fr 1fr}
+  .process-steps,.support-grid,.community-grid{grid-template-columns:1fr}
   #overflow-stats{grid-template-columns:1fr}
+  .consensus-card{padding:20px}
+  .consensus-spot{width:20px;height:20px;font-size:8px}
 }
 </style>
 </head>
@@ -1180,70 +1267,115 @@ footer{
     <p class="section-subtitle reveal d2">The design process only works if it is transparent and inclusive. Here is how we package each phase of this work for the people it affects.</p>
     <div class="section-rule reveal d3" style="background:var(--sage)"></div>
 
-    <div class="buyin-wrap reveal d2">
-      <div class="buyin-tabs-bar" id="buyin-tabs">
-        <button onclick="buyinTab(0)" class="buyin-tab buyin-tab-active">A tiered strategy for buy-in</button>
-        <button onclick="buyinTab(1)" class="buyin-tab">Simulation imagery</button>
-        <button onclick="buyinTab(2)" class="buyin-tab">Future iteration</button>
-      </div>
-      <div class="buyin-panels" id="buyin-panels">
-        <div class="buyin-panel">
-          <div class="buyin-panel-title">Stakeholder alignment</div>
-          <p><strong>Gowanus Residents and Businesses:</strong> Assessing tradeoffs (e.g., greater distance to parked vehicle, impacts on inventory movement in and out of storefronts) to find an optimal parking re-allocation.</p>
-          <p><strong>NYC Agencies:</strong> Getting permits from the DOB and DOT to build more garages and remove curb-side parking. Additionally, advocating to the city for fewer parking requirements in new developments.</p>
+    <div class="consensus-sim reveal d2" id="consensus-sim">
+      <div class="consensus-card">
+        <div class="consensus-header">
+          <div>
+            <h3>Vote on parking changes</h3>
+            <p>Click a mapped parking spot to mark what should be protected, removed, or kept neutral, then leave a block-level comment.</p>
+          </div>
+          <div class="consensus-stats" aria-live="polite">
+            <span class="consensus-pill" id="consensus-protect-pill" style="background:var(--sage-l);color:var(--sage)">Protected 0</span>
+            <span class="consensus-pill" id="consensus-remove-pill" style="background:var(--red-l);color:var(--red)">Removed 0</span>
+            <span class="consensus-pill" id="consensus-neutral-pill" style="background:var(--blue-l);color:var(--blue)">Neutral 20</span>
+            <span class="consensus-pill" id="consensus-comments-pill" style="background:var(--cream-d);color:var(--smoke)">Comments 0</span>
+          </div>
         </div>
-        <div class="buyin-panel" style="display:none">
-          <div class="buyin-panel-title">Showing, not telling</div>
-          <p>Our simulation-generated imagery helps stakeholders understand the potential outcomes of decisions more clearly. The higher the fidelity of these simulations, the more we can expect detailed, specific feedback to improve our design process.</p>
-        </div>
-        <div class="buyin-panel" style="display:none">
-          <div class="buyin-panel-title">Live tools, live feedback</div>
-          <p>By giving stakeholders the tools to tangibly interact with our digital prototypes, they can bring their questions and concerns to life:</p>
-          <ul>
-            <li><span>→</span> What happens if we move this parking garage to the other corner of the BID boundary?</li>
-            <li><span>→</span> Will foot traffic be routed away from my business if we remove street parking on the adjoining street?</li>
-            <li><span>→</span> How far will I need to walk to get to my car every day if my parking spot gets moved to a garage?</li>
-          </ul>
-        </div>
-      </div>
-    </div>
 
-    <script>
-    window.buyinTab = function(i) {
-      var tabs = document.querySelectorAll('.buyin-tab');
-      var panels = document.querySelectorAll('.buyin-panel');
-      tabs.forEach(function(t,idx){
-        var active = idx===i;
-        t.style.color = active ? 'var(--ink)' : 'var(--dust)';
-        t.style.borderBottom = active ? '2px solid var(--sage)' : '2px solid transparent';
-        t.classList.toggle('buyin-tab-active',active);
-      });
-      panels.forEach(function(p,idx){ p.style.display = idx===i ? 'block' : 'none'; });
-    };
-    </script>
+        <div class="consensus-toolbar">
+          <button class="consensus-btn active-protect" type="button" data-mode="protect">Protect mode</button>
+          <button class="consensus-btn" type="button" data-mode="remove">Remove mode</button>
+          <button class="consensus-btn" type="button" id="consensus-reset">Reset all</button>
+        </div>
 
-    <h3 style="font-family:var(--font-ui);font-size:20px;font-weight:700;margin:64px 0 8px" class="reveal">The 4-Phase Engagement Process</h3>
-    <p style="color:var(--smoke);font-size:13px;font-family:var(--font-body)" class="reveal d1">A structured sequence that moves from listening to co-designing to closing the loop.</p>
-    <div class="process-steps reveal d2">
-      <div class="process-step">
-        <div class="step-num">01</div>
-        <div class="step-title" style="color:var(--blue)">Collect</div>
-        <div class="step-desc">Sidewalk surveys and stakeholder identification at every block of the BID. Identify parking behavior and create a physical mapping of cars and people in Gowanus.</div>
+        <div class="consensus-vote-grid">
+          <div class="consensus-map-card">
+            <div class="consensus-map-wrap" id="consensus-map">
+              <img src="images/consensus-gowanus-map.png" alt="Gowanus parking consensus map">
+            </div>
+          </div>
+
+          <div class="consensus-side">
+            <div class="consensus-selected-row">
+              <div class="consensus-selected-badge" id="selected-spot-label">Spot 1</div>
+              <div class="consensus-state-badge" id="selected-state-label">Neutral</div>
+            </div>
+            <p>Use the map to test tradeoffs publicly. Every vote becomes a prompt for the real conversation: what changes, who is affected, and what needs to be protected?</p>
+            <div class="consensus-actions">
+              <button class="consensus-action protect" type="button" data-state-action="protect">Protect this spot</button>
+              <button class="consensus-action remove" type="button" data-state-action="remove">Remove this spot</button>
+              <button class="consensus-action neutral" type="button" data-state-action="neutral">Set to neutral</button>
+            </div>
+            <label class="consensus-label" for="consensus-comment">Resident comment</label>
+            <textarea class="consensus-textarea" id="consensus-comment" placeholder="Why should this spot stay or go? What is the local impact?"></textarea>
+            <div class="consensus-comments">
+              <h4>Recent comments</h4>
+              <div class="consensus-comment-list" id="consensus-comment-list">
+                <p>No comments yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="process-step">
-        <div class="step-num">02</div>
-        <div class="step-title" style="color:var(--blue)">Listen First</div>
-        <div class="step-desc">Discuss proposal with most impacted stakeholders and determine feasibility of parking solutions.</div>
+
+      <div class="consensus-card">
+        <div class="consensus-header">
+          <div>
+            <h3>Key approaches to consensus building</h3>
+            <p>Different stakeholders need different evidence before a parking transition feels workable.</p>
+          </div>
+        </div>
+        <div class="approach-layout">
+          <div class="approach-stack" id="approach-stack"></div>
+          <div class="approach-detail" id="approach-detail"></div>
+        </div>
       </div>
-      <div class="process-step">
-        <div class="step-num">03</div>
-        <div class="step-title" style="color:var(--amber)">Show the Scenarios</div>
-        <div class="step-desc">Present findings on public opinions and model simulations to community leaders. Iterate and improve on findings as we collaboratively draft a plan to present to agencies.</div>
+
+      <div class="support-grid">
+        <div class="support-card">
+          <h4>Simulation imagery makes tradeoffs legible</h4>
+          <p>Higher fidelity visuals help stakeholders react to concrete conditions instead of abstract policy language. Better visuals lead to better and more specific feedback.</p>
+        </div>
+        <div class="support-card">
+          <h4>Interactive prototypes surface the right questions</h4>
+          <p>What happens if the garage moves to another corner of the BID? Will foot traffic shift away from my business? How far will I need to walk?</p>
+        </div>
+        <div class="support-card">
+          <h4>Documented feedback builds implementation leverage</h4>
+          <p>Visible resident and business input gives agencies and garage partners a clearer mandate for permits, siting decisions, and public realm tradeoffs.</p>
+        </div>
       </div>
-      <div class="process-step">
-        <div class="step-num">04</div>
-        <div class="step-title" style="color:var(--sage)">Decide Together</div>
-        <div class="step-desc">Design and showcase live simulation demos for the public, in preparation of community board presentations.</div>
+
+      <div class="consensus-card">
+        <div class="consensus-header">
+          <div>
+            <h3>Community engagement</h3>
+            <p>The same simulation can work on phones, workshop screens, and community board materials.</p>
+          </div>
+        </div>
+        <div class="community-grid">
+          <div class="community-card">
+            <img src="images/consensus-community-phone.jpg" alt="Mobile input for parking consensus">
+            <div class="community-card-body">
+              <h4>Mobile input</h4>
+              <p>Residents can vote on specific spots, react to tradeoffs, and leave comments in a fast, accessible format.</p>
+            </div>
+          </div>
+          <div class="community-card">
+            <img src="images/consensus-community-workshop.jpg" alt="Interactive community workshop">
+            <div class="community-card-body">
+              <h4>Interactive workshops</h4>
+              <p>Shared digital surfaces let neighbors, businesses, and planners test scenarios together in real time.</p>
+            </div>
+          </div>
+          <div class="community-card">
+            <img src="images/consensus-community-board.jpg" alt="Community board deliberation">
+            <div class="community-card-body">
+              <h4>Community board deliberation</h4>
+              <p>Formal meetings are stronger when people arrive with concrete visuals, documented feedback, and clearer areas of agreement.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1263,6 +1395,243 @@ footer{
 
 <!-- ── Scripts ── -->
 <script>
+// ── Consensus Simulator ──────────────────────────────────────────────────────
+const consensusInitialSpots = [
+  { id: 1, x: 28, y: 18, state: 'neutral', comment: '' },
+  { id: 2, x: 33, y: 22, state: 'neutral', comment: '' },
+  { id: 3, x: 41, y: 27, state: 'neutral', comment: '' },
+  { id: 4, x: 50, y: 24, state: 'neutral', comment: '' },
+  { id: 5, x: 61, y: 19, state: 'neutral', comment: '' },
+  { id: 6, x: 68, y: 30, state: 'neutral', comment: '' },
+  { id: 7, x: 59, y: 39, state: 'neutral', comment: '' },
+  { id: 8, x: 52, y: 44, state: 'neutral', comment: '' },
+  { id: 9, x: 46, y: 50, state: 'neutral', comment: '' },
+  { id: 10, x: 37, y: 54, state: 'neutral', comment: '' },
+  { id: 11, x: 27, y: 59, state: 'neutral', comment: '' },
+  { id: 12, x: 58, y: 55, state: 'neutral', comment: '' },
+  { id: 13, x: 70, y: 51, state: 'neutral', comment: '' },
+  { id: 14, x: 76, y: 63, state: 'neutral', comment: '' },
+  { id: 15, x: 64, y: 70, state: 'neutral', comment: '' },
+  { id: 16, x: 51, y: 75, state: 'neutral', comment: '' },
+  { id: 17, x: 41, y: 79, state: 'neutral', comment: '' },
+  { id: 18, x: 31, y: 84, state: 'neutral', comment: '' },
+  { id: 19, x: 22, y: 72, state: 'neutral', comment: '' },
+  { id: 20, x: 18, y: 44, state: 'neutral', comment: '' },
+];
+
+const consensusStakeholders = [
+  {
+    key: 'residents',
+    title: 'Gowanus residents and businesses',
+    accent: '#1A6FAD',
+    short: 'Assessing tradeoffs to find the most workable parking reallocation.',
+    bullets: [
+      'Compare walking distance, storefront access, and inventory movement',
+      'Show block-by-block tradeoffs instead of abstract parking policy',
+    ],
+  },
+  {
+    key: 'agencies',
+    title: 'NYC agencies',
+    accent: '#3D7A55',
+    short: 'Turning neighborhood buy-in into implementation leverage.',
+    bullets: [
+      'Coordinate with DOB and DOT to permit garages and reallocate street parking',
+      'Use visible resident and business support to strengthen approvals',
+      'Reduce friction by showing the proposal has already been tested publicly',
+    ],
+  },
+  {
+    key: 'garage',
+    title: 'Garage developers',
+    accent: '#C97C10',
+    short: 'Making the business case for new off-street capacity.',
+    bullets: [
+      'Point to rising demand from new development and reduced street supply',
+      'Show where garages can absorb demand with the least disruption',
+      'Frame garages as part of a managed neighborhood transition',
+    ],
+  },
+];
+
+let consensusSpots = consensusInitialSpots.map(spot => ({ ...spot }));
+let consensusSelectedId = 1;
+let consensusMode = 'protect';
+let activeStakeholder = 'residents';
+
+function consensusColor(state) {
+  if (state === 'protect') return 'var(--sage)';
+  if (state === 'remove') return 'var(--red)';
+  return 'var(--blue)';
+}
+
+function consensusTone(state) {
+  if (state === 'protect') return { background: 'var(--sage-l)', color: 'var(--sage)' };
+  if (state === 'remove') return { background: 'var(--red-l)', color: 'var(--red)' };
+  return { background: 'var(--blue-l)', color: 'var(--blue)' };
+}
+
+function getConsensusSpot(id) {
+  return consensusSpots.find(spot => spot.id === id);
+}
+
+function renderConsensusMap() {
+  const mapEl = document.getElementById('consensus-map');
+  if (!mapEl) return;
+  mapEl.querySelectorAll('.consensus-spot').forEach(el => el.remove());
+  consensusSpots.forEach(spot => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `consensus-spot${spot.id === consensusSelectedId ? ' selected' : ''}`;
+    button.style.left = `${spot.x}%`;
+    button.style.top = `${spot.y}%`;
+    button.style.background = consensusColor(spot.state);
+    button.textContent = spot.id;
+    button.title = `Spot ${spot.id}`;
+    button.addEventListener('click', () => {
+      consensusSelectedId = spot.id;
+      setConsensusSpotState(spot.id, consensusMode);
+    });
+    mapEl.appendChild(button);
+  });
+}
+
+function renderConsensusDetails() {
+  const selected = getConsensusSpot(consensusSelectedId);
+  if (!selected) return;
+
+  document.getElementById('selected-spot-label').textContent = `Spot ${selected.id}`;
+  const stateLabel = document.getElementById('selected-state-label');
+  const tone = consensusTone(selected.state);
+  stateLabel.textContent = selected.state;
+  stateLabel.style.background = tone.background;
+  stateLabel.style.color = tone.color;
+
+  const textarea = document.getElementById('consensus-comment');
+  if (textarea.value !== selected.comment) textarea.value = selected.comment;
+}
+
+function renderConsensusCounts() {
+  const protect = consensusSpots.filter(spot => spot.state === 'protect').length;
+  const remove = consensusSpots.filter(spot => spot.state === 'remove').length;
+  const neutral = consensusSpots.filter(spot => spot.state === 'neutral').length;
+  const comments = consensusSpots.filter(spot => spot.comment.trim()).length;
+  document.getElementById('consensus-protect-pill').textContent = `Protected ${protect}`;
+  document.getElementById('consensus-remove-pill').textContent = `Removed ${remove}`;
+  document.getElementById('consensus-neutral-pill').textContent = `Neutral ${neutral}`;
+  document.getElementById('consensus-comments-pill').textContent = `Comments ${comments}`;
+}
+
+function renderConsensusComments() {
+  const list = document.getElementById('consensus-comment-list');
+  const comments = consensusSpots.filter(spot => spot.comment.trim());
+  if (!comments.length) {
+    list.innerHTML = '<p>No comments yet.</p>';
+    return;
+  }
+  list.innerHTML = comments.map(spot => {
+    const tone = consensusTone(spot.state);
+    return `
+      <div class="consensus-comment-card">
+        <div class="consensus-comment-head">
+          <span>Spot ${spot.id}</span>
+          <span style="color:${tone.color}">${spot.state}</span>
+        </div>
+        <p>${spot.comment.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]))}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderConsensusMode() {
+  document.querySelectorAll('[data-mode]').forEach(button => {
+    const active = button.dataset.mode === consensusMode;
+    button.classList.toggle('active-protect', active && consensusMode === 'protect');
+    button.classList.toggle('active-remove', active && consensusMode === 'remove');
+  });
+}
+
+function renderConsensus() {
+  renderConsensusMap();
+  renderConsensusDetails();
+  renderConsensusCounts();
+  renderConsensusComments();
+  renderConsensusMode();
+}
+
+function setConsensusSpotState(id, state) {
+  consensusSpots = consensusSpots.map(spot => spot.id === id ? { ...spot, state } : spot);
+  renderConsensus();
+}
+
+function renderApproaches() {
+  const stack = document.getElementById('approach-stack');
+  const detail = document.getElementById('approach-detail');
+  if (!stack || !detail) return;
+
+  stack.innerHTML = consensusStakeholders.map(card => `
+    <button type="button" class="approach-selector${card.key === activeStakeholder ? ' active' : ''}" data-stakeholder="${card.key}" style="border-color:${card.key === activeStakeholder ? card.accent : 'var(--rule)'}">
+      <span class="approach-accent" style="background:${card.accent}"></span>
+      <span>
+        <span class="approach-title">${card.title}</span>
+        <span class="approach-short">${card.short}</span>
+      </span>
+    </button>
+  `).join('');
+
+  const active = consensusStakeholders.find(card => card.key === activeStakeholder);
+  detail.innerHTML = `
+    <div class="approach-bar" style="background:${active.accent}"></div>
+    <h4>${active.title}</h4>
+    <p>${active.short}</p>
+    <ul>${active.bullets.map(bullet => `<li>${bullet}</li>`).join('')}</ul>
+  `;
+
+  stack.querySelectorAll('[data-stakeholder]').forEach(button => {
+    button.addEventListener('click', () => {
+      activeStakeholder = button.dataset.stakeholder;
+      renderApproaches();
+    });
+  });
+}
+
+document.querySelectorAll('[data-mode]').forEach(button => {
+  button.addEventListener('click', () => {
+    consensusMode = button.dataset.mode;
+    renderConsensusMode();
+  });
+});
+
+document.querySelectorAll('[data-state-action]').forEach(button => {
+  button.addEventListener('click', () => {
+    setConsensusSpotState(consensusSelectedId, button.dataset.stateAction);
+  });
+});
+
+const consensusComment = document.getElementById('consensus-comment');
+if (consensusComment) {
+  consensusComment.addEventListener('input', event => {
+    consensusSpots = consensusSpots.map(spot =>
+      spot.id === consensusSelectedId ? { ...spot, comment: event.target.value } : spot
+    );
+    renderConsensusCounts();
+    renderConsensusComments();
+  });
+}
+
+const consensusReset = document.getElementById('consensus-reset');
+if (consensusReset) {
+  consensusReset.addEventListener('click', () => {
+    consensusSpots = consensusInitialSpots.map(spot => ({ ...spot }));
+    consensusSelectedId = 1;
+    consensusMode = 'protect';
+    renderConsensus();
+  });
+}
+
+renderConsensus();
+renderApproaches();
+
 // ── Leaflet Map ──────────────────────────────────────────────────────────────
 const map = L.map('map', { zoomControl: true }).setView([40.6726, -73.9897], 15);
 
