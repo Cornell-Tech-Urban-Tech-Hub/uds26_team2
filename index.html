@@ -3,649 +3,768 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Street Knowledge — Gowanus BID Parking Strategy</title>
+<title>Streets for the People — Gowanus BID Parking Strategy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Syne:wght@600;700;800&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  :root {
-    --black:   #0f0f0f;
-    --white:   #ffffff;
-    --gray-50: #f8f8f8;
-    --gray-100:#f0f0f0;
-    --gray-200:#e0e0e0;
-    --gray-400:#999;
-    --gray-600:#555;
-    --gray-800:#222;
+:root{
+  --ink:      #1C1712;
+  --cream:    #F5F0E8;
+  --cream-d:  #EDE7D8;
+  --canvas:   #FAFAF6;
+  --white:    #ffffff;
+  --smoke:    #4A4540;
+  --dust:     #8C8680;
+  --rule:     #DDD8CE;
 
-    --red:     #d93025;
-    --red-l:   #fdecea;
-    --blue:    #1a6fad;
-    --blue-l:  #e8f1fa;
-    --gold:    #b87800;
-    --gold-l:  #fdf3dc;
-    --green:   #1a7a45;
-    --green-l: #e8f5ee;
+  --red:      #C84B31;
+  --red-l:    #F9EDE8;
+  --teal:     #1E6B5E;
+  --teal-l:   #E2EFED;
+  --amber:    #C97C10;
+  --amber-l:  #FDF0D8;
+  --sage:     #3D7A55;
+  --sage-l:   #E2F0E8;
 
-    --radius:  12px;
-    --shadow:  0 2px 16px rgba(0,0,0,.08);
-  }
+  --blue:     #1A6FAD;
+  --blue-l:   #E5F0FA;
+  --gold:     #B87800;
+  --gold-l:   #FDF0D0;
+  --green:    #1A7A45;
+  --green-l:  #E4F3EC;
 
-  html { scroll-behavior: smooth; }
+  --dark:     #0E0C0A;
+  --dark-2:   #161310;
+  --dark-3:   #1F1C18;
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--white);
-    color: var(--gray-800);
-    line-height: 1.6;
-    font-size: 16px;
-  }
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-ui:      'Syne', sans-serif;
+  --font-body:    'Outfit', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
 
-  /* ── Nav ── */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(255,255,255,.95);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--gray-200);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 40px; height: 56px;
-  }
-  .nav-logo { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--black); text-transform: uppercase; }
-  .nav-links { display: flex; gap: 32px; }
-  .nav-links a { font-size: 13px; color: var(--gray-600); text-decoration: none; font-weight: 500; }
-  .nav-links a:hover { color: var(--black); }
+  --radius:  10px;
+  --ease:    cubic-bezier(0.16,1,0.3,1);
+}
 
-  /* ── Sections ── */
-  section { padding: 96px 0; }
-  .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
-  .container-wide { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--canvas);color:var(--ink);line-height:1.65;font-size:16px;overflow-x:hidden}
 
-  /* ── Hero ── */
-  #hero {
-    padding: 0;
-    min-height: 100vh;
-    background: var(--black);
-    display: flex; flex-direction: column; justify-content: flex-end;
-    position: relative; overflow: hidden;
-  }
-  .hero-bg {
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, #0f0f1a 0%, #0a1628 50%, #0f1a0f 100%);
-  }
-  .hero-grid {
-    position: absolute; inset: 0; opacity: .06;
-    background-image:
-      linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
-  .hero-content {
-    position: relative; z-index: 2;
-    padding: 0 60px 80px;
-    max-width: 1200px;
-  }
-  .hero-eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: .15em;
-    color: rgba(255,255,255,.4); text-transform: uppercase; margin-bottom: 24px;
-  }
-  .hero-title {
-    font-size: clamp(52px, 7vw, 96px);
-    font-weight: 900; line-height: 1.0;
-    color: var(--white); margin-bottom: 12px;
-  }
-  .hero-title span { color: #4ade80; }
-  .hero-subtitle {
-    font-size: clamp(18px, 2vw, 26px);
-    font-weight: 300; color: rgba(255,255,255,.6);
-    margin-bottom: 48px; max-width: 600px;
-  }
-  .hero-stats {
-    display: flex; gap: 48px; flex-wrap: wrap; margin-bottom: 64px;
-  }
-  .hero-stat { border-left: 3px solid rgba(255,255,255,.15); padding-left: 20px; }
-  .hero-stat-num { font-size: 40px; font-weight: 800; color: var(--white); line-height: 1; }
-  .hero-stat-label { font-size: 12px; color: rgba(255,255,255,.4); margin-top: 4px; text-transform: uppercase; letter-spacing: .06em; }
-  .hero-scroll {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 12px; color: rgba(255,255,255,.3); letter-spacing: .1em; text-transform: uppercase;
-  }
+/* ── Grain overlay ── */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px}
 
-  /* ── Section Headers ── */
-  .section-eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: .15em;
-    text-transform: uppercase; margin-bottom: 12px;
-  }
-  .section-title {
-    font-size: clamp(32px, 4vw, 52px);
-    font-weight: 800; line-height: 1.1; margin-bottom: 16px;
-  }
-  .section-subtitle {
-    font-size: 17px; color: var(--gray-600); max-width: 640px; line-height: 1.7;
-  }
-  .section-divider { width: 48px; height: 4px; border-radius: 2px; margin: 24px 0 48px; }
+/* ── Nav ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  background:rgba(14,12,10,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:52px;
+}
+.nav-logo{font-family:var(--font-ui);font-size:13px;font-weight:700;letter-spacing:.18em;
+  color:rgba(255,255,255,.9);text-transform:uppercase}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,.45);text-decoration:none;
+  transition:color .25s}
+.nav-links a:hover{color:rgba(255,255,255,.9)}
+.nav-progress{
+  position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:rgba(255,255,255,.08);
+}
+.nav-progress-fill{
+  height:100%;background:var(--red);
+  transform:scaleX(0);transform-origin:left;transition:transform .1s linear;
+}
 
-  /* ── Phase badge ── */
-  .phase-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 100px;
-    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-    margin-bottom: 20px;
-  }
-  .phase-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+/* ── Scroll reveal ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in-view{opacity:1;transform:none}
+.reveal-left{opacity:0;transform:translateX(-28px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal-left.in-view{opacity:1;transform:none}
+.reveal-right{opacity:0;transform:translateX(28px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal-right.in-view{opacity:1;transform:none}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+.d4{transition-delay:.4s}.d5{transition-delay:.5s}.d6{transition-delay:.6s}
 
-  /* ── Map section ── */
-  #insight { background: var(--gray-50); }
-  #map { height: 520px; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-  .map-legend {
-    display: flex; gap: 24px; flex-wrap: wrap;
-    margin-top: 16px; padding: 16px 20px;
-    background: var(--white); border-radius: var(--radius);
-    border: 1px solid var(--gray-200);
-  }
-  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-600); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+/* ── Layout ── */
+section{padding:104px 0;position:relative}
+.container{max-width:1160px;margin:0 auto;padding:0 48px}
+.container-wide{max-width:1360px;margin:0 auto;padding:0 48px}
 
-  /* ── Stat cards ── */
-  .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 48px; }
-  .stat-card {
-    background: var(--white); border-radius: var(--radius);
-    border: 1px solid var(--gray-200); padding: 28px;
-    position: relative; overflow: hidden;
-  }
-  .stat-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-    background: var(--accent-color);
-  }
-  .stat-num { font-size: 48px; font-weight: 800; line-height: 1; margin-bottom: 8px; color: var(--accent-color); }
-  .stat-label { font-size: 14px; color: var(--gray-600); }
-  .cars-grid { display: grid; grid-template-columns: 1fr .95fr 1fr; gap: 20px; margin-bottom: 48px; align-items: stretch; }
-  .cars-col { display: grid; gap: 20px; }
-  .cars-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  .cars-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: var(--accent-color);
-  }
-  .cars-metric { font-size: 44px; font-weight: 800; line-height: 1; margin-bottom: 8px; color: var(--accent-color); }
-  .cars-copy { font-size: 14px; color: var(--gray-600); line-height: 1.6; }
+/* ── Section anatomy ── */
+.eyebrow{
+  font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:12px;
+}
+.eyebrow::before{content:'';display:block;width:24px;height:1px;background:currentColor;opacity:.6}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(40px,5vw,68px);
+  font-weight:600;line-height:1.05;letter-spacing:-.01em;margin-bottom:20px
+}
+.section-subtitle{
+  font-family:var(--font-body);font-size:17px;color:var(--smoke);
+  max-width:600px;line-height:1.75
+}
+.section-rule{width:40px;height:2px;border-radius:1px;margin:28px 0 52px}
 
-  /* ── Scenario sections ── */
-  .scenario-section { padding: 80px 0; border-bottom: 1px solid var(--gray-100); }
-  .scenario-section:last-of-type { border-bottom: none; }
+/* ── Section watermark numbers ── */
+.section-num{
+  font-family:var(--font-display);font-size:220px;font-weight:700;line-height:1;
+  position:absolute;top:-24px;right:0;color:rgba(0,0,0,.04);
+  user-select:none;pointer-events:none;z-index:0;letter-spacing:-.04em;
+}
+.dark-num{color:rgba(255,255,255,.04)}
 
-  .scenario-layout {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 48px; align-items: start;
-  }
-  .scenario-layout.reverse { direction: rtl; }
-  .scenario-layout.reverse > * { direction: ltr; }
+/* ── Phase chips ── */
+.phase-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  padding:5px 14px;border-radius:100px;margin-bottom:20px;
+}
+.phase-chip .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-  .scenario-video-wrap {
-    position: relative; border-radius: var(--radius);
-    overflow: hidden; box-shadow: var(--shadow);
-    background: #000;
-  }
-  .scenario-video-wrap video {
-    width: 100%; display: block;
-  }
-  .scenario-video-label {
-    position: absolute; top: 14px; left: 14px;
-    background: rgba(0,0,0,.75); backdrop-filter: blur(4px);
-    color: white; font-size: 11px; font-weight: 700;
-    letter-spacing: .1em; text-transform: uppercase;
-    padding: 5px 12px; border-radius: 100px;
-  }
+/* ── Hero ── */
+#hero{
+  min-height:100vh;background:var(--dark);
+  display:flex;flex-direction:column;justify-content:flex-end;
+  position:relative;overflow:hidden;padding:0
+}
+.hero-atmosphere{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 80%,rgba(200,75,49,.14) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 70% at 85% 15%,rgba(30,107,94,.09) 0%,transparent 60%),
+    var(--dark)
+}
+.hero-lines{
+  position:absolute;inset:0;opacity:.04;
+  background-image:
+    linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);
+  background-size:80px 80px
+}
+.hero-content{
+  position:relative;z-index:2;
+  padding:0 64px 88px;
+  max-width:1300px;
+}
+.hero-kicker{
+  font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:32px;
+  display:flex;align-items:center;gap:16px;
+}
+.hero-kicker::before{content:'';width:32px;height:1px;background:var(--red);opacity:.8}
+.hero-title{
+  font-family:var(--font-display);
+  font-size:clamp(56px,8.5vw,120px);
+  font-weight:700;font-style:italic;
+  line-height:.95;letter-spacing:-.02em;
+  color:var(--white);margin-bottom:16px;
+  animation:heroUp 1.1s var(--ease) both;
+}
+.hero-title em{font-style:normal;color:var(--red)}
+.hero-sub{
+  font-family:var(--font-ui);font-size:clamp(14px,1.6vw,20px);
+  font-weight:600;color:rgba(255,255,255,.45);
+  max-width:680px;line-height:1.5;margin-bottom:64px;letter-spacing:.01em;
+  animation:heroUp 1.1s .15s var(--ease) both;
+}
+.hero-stats{
+  display:flex;gap:0;flex-wrap:wrap;margin-bottom:72px;
+  border-top:1px solid rgba(255,255,255,.08);
+  animation:heroUp 1s .3s var(--ease) both;
+}
+.hero-stat{
+  padding:24px 48px 20px 0;margin-right:48px;
+  border-right:1px solid rgba(255,255,255,.08);
+}
+.hero-stat:last-child{border-right:none}
+.hero-stat-num{
+  font-family:var(--font-display);font-size:clamp(36px,4vw,56px);
+  font-weight:600;color:var(--white);line-height:1;margin-bottom:6px;
+}
+.hero-stat-label{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(255,255,255,.35)
+}
+.hero-scroll{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.22);
+  display:flex;align-items:center;gap:10px;
+  animation:heroUp 1s .45s var(--ease) both;
+}
+.hero-scroll::after{
+  content:'';display:block;width:1px;height:40px;background:rgba(255,255,255,.15)
+}
+.hero-diagonal{
+  position:absolute;bottom:0;left:0;right:0;height:80px;
+  background:var(--canvas);
+  clip-path:polygon(0 100%,100% 100%,100% 0);
+}
+@keyframes heroUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 
-  .scenario-info { display: flex; flex-direction: column; gap: 20px; }
-  .scenario-year {
-    font-size: 72px; font-weight: 900; line-height: 1;
-    letter-spacing: -.02em;
-  }
-  .scenario-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-  .scenario-desc { font-size: 15px; color: var(--gray-600); line-height: 1.75; }
+/* ── Introduction ── */
+#introduction{background:var(--cream)}
+#introduction .section-title{color:var(--ink)}
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start;margin-top:8px}
+.intro-body p{
+  font-size:16px;color:var(--smoke);line-height:1.85;margin-bottom:20px
+}
+.intro-body a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.intro-img{
+  border-radius:4px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(28,23,18,.18);
+}
+.intro-img img{width:100%;display:block;aspect-ratio:4/3;object-fit:cover}
 
-  .scenario-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .metric-chip {
-    background: var(--chip-bg); border: 1px solid var(--chip-border);
-    border-radius: 10px; padding: 14px 16px;
-  }
-  .metric-chip-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
-  .metric-chip-value { font-size: 22px; font-weight: 700; }
+/* ── Insight ── */
+#insight{background:var(--canvas)}
+.bid-vision{
+  background:linear-gradient(135deg,#0f5f9c 0%,#1976d2 58%,#31a2f2 100%);
+  border-radius:8px;padding:36px 40px;margin:24px 0 40px;
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 16px 48px rgba(9,49,84,.22);position:relative;overflow:hidden;
+}
+.bid-vision::before{
+  content:'';position:absolute;top:-40px;right:-30px;
+  width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.18) 0%,transparent 70%)
+}
+.bid-vision-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:12px;position:relative
+}
+.bid-vision-quote{
+  position:relative;font-family:var(--font-display);font-size:clamp(17px,2vw,22px);
+  font-style:italic;font-weight:400;color:#fff;line-height:1.7;max-width:880px
+}
+.cars-grid{display:grid;grid-template-columns:1fr .95fr 1fr;gap:16px;margin-bottom:48px;align-items:stretch}
+.cars-col{display:grid;gap:16px}
+.cars-card{
+  background:var(--white);border:1px solid var(--rule);border-radius:8px;padding:24px;
+  box-shadow:0 2px 16px rgba(0,0,0,.04);position:relative;overflow:hidden;
+  transition:box-shadow .3s var(--ease),transform .3s var(--ease);
+}
+.cars-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.1);transform:translateY(-2px)}
+.cars-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-color)}
+.cars-metric{
+  font-family:var(--font-display);font-size:clamp(36px,4vw,52px);
+  font-weight:700;line-height:1;margin-bottom:8px;color:var(--accent-color)
+}
+.cars-copy{font-size:13px;color:var(--smoke);line-height:1.65}
+#map{height:500px;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+.map-legend{
+  display:flex;gap:20px;flex-wrap:wrap;margin-top:12px;
+  padding:14px 18px;background:var(--white);border-radius:8px;
+  border:1px solid var(--rule);font-family:var(--font-mono);
+}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.06em;color:var(--smoke)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 
-  .scenario-what {
-    background: var(--chip-bg); border-left: 4px solid var(--accent-color);
-    padding: 16px 20px; border-radius: 0 10px 10px 0;
-  }
-  .scenario-what h4 { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; color: var(--accent-color); }
-  .scenario-what ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-  .scenario-what ul li { font-size: 14px; color: var(--gray-600); padding-left: 16px; position: relative; }
-  .scenario-what ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent-color); font-weight: 700; }
+/* ── Transformation ── */
+#transformation{background:var(--cream)}
+.tale-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:32px}
+.tale-card{
+  background:var(--white);border-radius:8px;border:1px solid var(--rule);padding:28px;
+  border-top:4px solid var(--card-accent);transition:box-shadow .3s var(--ease)
+}
+.tale-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.09)}
+.tale-tag{
+  display:inline-block;font-family:var(--font-mono);font-size:9px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;
+  border-radius:100px;margin-bottom:14px;
+}
+.tale-h{font-family:var(--font-ui);font-size:18px;font-weight:700;margin-bottom:14px;color:var(--ink)}
+.tale-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.tale-list li{font-size:13px;color:var(--smoke);line-height:1.65}
+.tale-list li strong{color:var(--ink)}
+.tale-callout{font-size:13px;padding:12px;border-radius:8px;margin-top:8px;line-height:1.6}
+.tale-source{font-size:11px;color:var(--dust);margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
+.tale-source a{color:var(--smoke)}
+.principles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.principle-card{
+  background:var(--white);border:1px solid var(--rule);border-radius:8px;padding:24px;
+  border-top:4px solid var(--red);box-shadow:0 4px 20px rgba(0,0,0,.04)
+}
+.principle-num{
+  font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;
+  color:var(--red);background:var(--red-l);border:1px solid rgba(200,75,49,.2);
+  border-radius:100px;padding:4px 10px;margin-bottom:10px;display:inline-block
+}
+.principle-title{font-family:var(--font-ui);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3}
+.principle-desc{font-size:13px;color:var(--smoke);line-height:1.7}
+.precedence-wrap{margin-top:72px;padding:44px;background:var(--canvas);border-radius:8px;border:1px solid var(--rule)}
 
-  .sim-legend {
-    background: var(--gray-50);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-    margin-bottom: 56px;
-    border: 1px solid var(--gray-200);
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 12px;
-    overflow-x: auto;
-  }
-  .sim-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: 10px;
-    padding: 10px 12px;
-    flex-shrink: 0;
-  }
-  .sim-legend-swatch {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .sim-legend-label {
-    font-size: 13px;
-    color: var(--gray-700);
-    line-height: 1.4;
-    white-space: nowrap;
-  }
+/* ── Simulation ── */
+#simulation{padding-top:0;background:var(--canvas)}
+.sim-header{background:var(--dark);padding:80px 0 64px;position:relative;overflow:hidden}
+.sim-header-atmo{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 80% at 85% 50%,rgba(200,75,49,.08) 0%,transparent 60%)
+}
+.sim-header .section-title{color:var(--white)}
+.sim-header .section-subtitle{color:rgba(255,255,255,.45)}
+.sim-header .eyebrow{color:var(--amber)}
+.sim-header .section-rule{background:var(--amber)}
 
-  /* ── Intervention principles ── */
-  .principles-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-  .principle-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: 14px;
-    padding: 22px 22px 20px;
-    border-top: 4px solid var(--red);
-    box-shadow: 0 8px 20px rgba(0,0,0,.04);
-  }
-  .principle-num {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: .1em;
-    color: var(--red);
-    background: var(--red-l);
-    border: 1px solid #f0c3bd;
-    border-radius: 100px;
-    padding: 4px 10px;
-    margin-bottom: 10px;
-  }
-  .principle-title {
-    font-size: 17px;
-    font-weight: 800;
-    color: var(--gray-800);
-    margin-bottom: 8px;
-    line-height: 1.3;
-  }
-  .principle-desc {
-    font-size: 14px;
-    color: var(--gray-600);
-    line-height: 1.7;
-    margin: 0;
-  }
+.sim-legend{
+  background:var(--white);border-radius:8px;padding:16px 20px;
+  margin:0 48px 0;border:1px solid var(--rule);
+  display:flex;align-items:center;flex-wrap:nowrap;gap:10px;overflow-x:auto;
+  position:relative;z-index:2;
+  box-shadow:0 4px 24px rgba(0,0,0,.07);
+  transform:translateY(-28px);
+}
+.sim-legend-item{
+  display:flex;align-items:center;gap:8px;
+  background:var(--canvas);border:1px solid var(--rule);
+  border-radius:100px;padding:7px 14px;flex-shrink:0;
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--smoke)
+}
+.sim-legend-swatch{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 
-  /* ── Charts section ── */
-  #prediction { background: var(--black); color: var(--white); }
-  #prediction .section-title { color: var(--white); }
-  #prediction .section-subtitle { color: rgba(255,255,255,.5); }
-  #prediction .section-eyebrow { color: #4ade80; }
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-  .chart-card {
-    background: rgba(255,255,255,.05);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: var(--radius); padding: 28px;
-  }
-  .chart-card h3 { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.6); margin-bottom: 20px; letter-spacing: .04em; text-transform: uppercase; }
-  .chart-card canvas { max-height: 220px; }
+/* scenario sections */
+.scenario-section{padding:72px 0;border-bottom:1px solid var(--rule)}
+.scenario-section:last-of-type{border-bottom:none}
+.scenario-layout{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start}
+.scenario-layout.reverse{direction:rtl}
+.scenario-layout.reverse>*{direction:ltr}
+.scenario-video-wrap{
+  position:relative;border-radius:8px;overflow:hidden;
+  box-shadow:0 8px 40px rgba(0,0,0,.14);background:#000;
+  transition:box-shadow .4s var(--ease);
+}
+.scenario-video-wrap:hover{box-shadow:0 16px 56px rgba(0,0,0,.22)}
+.scenario-video-wrap video{width:100%;display:block}
+.scenario-video-label{
+  position:absolute;top:12px;left:12px;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
+  color:rgba(255,255,255,.9);font-family:var(--font-mono);font-size:9px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border-radius:100px;
+}
+.scenario-info{display:flex;flex-direction:column;gap:20px}
+.scenario-tag{
+  display:inline-block;font-family:var(--font-mono);font-size:9px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;padding:5px 13px;
+  border-radius:100px;margin-bottom:8px;
+}
+.scenario-year{
+  font-family:var(--font-display);font-size:clamp(56px,7vw,88px);
+  font-weight:700;line-height:.9;letter-spacing:-.03em;margin-bottom:4px;
+}
+.scenario-name{font-family:var(--font-ui);font-size:19px;font-weight:700;margin-bottom:4px;color:var(--ink)}
+.scenario-desc{font-size:14px;color:var(--smoke);line-height:1.8}
+.scenario-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric-chip{
+  background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:8px;padding:14px 16px;
+}
+.metric-chip-label{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dust);margin-bottom:6px;
+}
+.metric-chip-value{font-family:var(--font-display);font-size:26px;font-weight:600}
+.scenario-what{
+  background:var(--chip-bg);border-left:3px solid var(--accent-color);
+  padding:16px 18px;border-radius:0 8px 8px 0;
+}
+.scenario-what h4{
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:10px;color:var(--accent-color)
+}
+.scenario-what ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+.scenario-what li{font-size:13px;color:var(--smoke);padding-left:16px;position:relative;line-height:1.6}
+.scenario-what li::before{content:'→';position:absolute;left:0;color:var(--accent-color);font-weight:700}
 
-  /* ── Proposal section ── */
-  #proposal { background: transparent; }
-  .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 48px; }
-  .timeline-phase {
-    padding: 32px 28px;
-    position: relative;
-  }
-  .timeline-phase::after {
-    content: '→'; position: absolute; right: -14px; top: 50%;
-    transform: translateY(-50%); font-size: 24px; color: rgba(255,255,255,.2); z-index: 1;
-  }
-  .timeline-phase:last-child::after { display: none; }
-  .timeline-year { font-size: 48px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
-  .timeline-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; }
-  .timeline-items { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .timeline-items li { font-size: 14px; color: rgba(255,255,255,.55); padding-left: 16px; position: relative; line-height: 1.5; }
-  .timeline-items li::before { content: '·'; position: absolute; left: 0; font-weight: 700; font-size: 18px; line-height: 1; top: 3px; }
+/* ── Overflow ── */
+#overflow{padding:88px 0;background:#0A0908;color:#fff}
+#overflow .eyebrow{color:#ff7b6b}
+#overflow .section-title{color:#fff;font-family:var(--font-display);font-style:italic}
+#overflow .section-subtitle{color:rgba(255,255,255,.45)}
+.overflow-btns{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.overflow-btn{
+  padding:9px 20px;border-radius:100px;border:1px solid rgba(255,255,255,.15);
+  cursor:pointer;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;color:rgba(255,255,255,.4);transition:all .25s var(--ease);
+}
+.overflow-btn.active{color:#fff;border-color:transparent}
+.overflow-btn:hover{color:rgba(255,255,255,.85)}
+#overflow-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.overflow-stat-card{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:8px;padding:18px;
+}
+.overflow-stat-label{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.35);margin-bottom:8px;
+}
+.overflow-stat-val{font-family:var(--font-display);font-size:32px;font-weight:600;line-height:1}
+#overflow-map{height:540px;background:#1a1a2e}
+.overflow-map-wrap{position:relative;border-radius:8px;overflow:hidden;box-shadow:0 4px 40px rgba(0,0,0,.6)}
+.overflow-map-legend{
+  position:absolute;bottom:20px;right:20px;
+  background:rgba(10,9,8,.92);backdrop-filter:blur(10px);
+  border-radius:8px;padding:16px 20px;border:1px solid rgba(255,255,255,.1);
+  min-width:190px;
+}
+.overflow-map-legend-title{
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px;
+}
+.overflow-map-legend-item{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:9px;color:rgba(255,255,255,.6);margin-bottom:6px;
+}
+.overflow-map-legend-item:last-child{margin-bottom:0}
+.overflow-explanation{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
+.overflow-card{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;padding:28px;
+}
+.overflow-card-title{
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:12px;
+}
+.overflow-card p{font-size:13px;color:rgba(255,255,255,.5);line-height:1.75}
+.overflow-card strong{color:rgba(255,255,255,.85)}
+#overflow-label{
+  position:absolute;top:16px;left:16px;
+  background:rgba(239,68,68,.88);color:#fff;
+  padding:6px 14px;border-radius:100px;
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;display:none;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
 
-  .revenue-flow {
-    display: grid; grid-template-columns: 1fr auto 1fr auto 1fr;
-    gap: 0; align-items: center; margin-top: 48px;
-    background: rgba(255,255,255,.05); border-radius: var(--radius);
-    padding: 32px; border: 1px solid rgba(255,255,255,.08);
-  }
-  .revenue-col { display: flex; flex-direction: column; gap: 12px; }
-  .revenue-arrow { font-size: 28px; color: rgba(255,255,255,.25); text-align: center; padding: 0 16px; }
-  .revenue-box {
-    background: rgba(255,255,255,.05); border-radius: 10px;
-    border: 1px solid rgba(255,255,255,.08); padding: 16px 18px;
-    border-left: 4px solid var(--accent-color);
-  }
-  .revenue-box-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
-  .revenue-box-sub { font-size: 13px; color: rgba(255,255,255,.4); }
+/* ── Prediction ── */
+#prediction{background:var(--dark-2);color:#fff;padding:88px 0}
+#prediction .eyebrow{color:#6ee7b7}
+#prediction .section-title{font-family:var(--font-display);color:#fff;font-style:italic}
+#prediction .section-subtitle{color:rgba(255,255,255,.4)}
+#prediction .section-rule{background:rgba(255,255,255,.12)}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.chart-card{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;padding:28px;
+}
+.chart-card h3{
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:20px;
+}
+.chart-card canvas{max-height:220px}
 
-  /* ── Engagement section ── */
-  #engagement { background: var(--gray-50); }
-  .engagement-table {
-    width: 100%; border-collapse: separate; border-spacing: 0;
-    border-radius: var(--radius); overflow: hidden;
-    border: 1px solid var(--gray-200); margin-top: 48px;
-    box-shadow: var(--shadow);
-  }
-  .engagement-table th {
-    background: var(--black); color: var(--white);
-    padding: 16px 20px; font-size: 12px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .1em; text-align: left;
-  }
-  .engagement-table td {
-    padding: 20px; background: var(--white);
-    border-bottom: 1px solid var(--gray-100); font-size: 14px; vertical-align: top;
-  }
-  .engagement-table tr:last-child td { border-bottom: none; }
-  .engagement-table tr:hover td { background: var(--gray-50); }
-  .phase-cell { font-weight: 800; font-size: 15px; white-space: nowrap; }
-  .tool-chip {
-    display: inline-block; padding: 3px 10px; border-radius: 100px;
-    font-size: 12px; font-weight: 600; margin-bottom: 6px;
-  }
-  .audience-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .audience-tag {
-    padding: 4px 10px; border-radius: 100px;
-    font-size: 12px; font-weight: 500;
-  }
+/* Proposal (inside prediction) */
+#proposal{padding-top:64px}
+#proposal .section-title{font-family:var(--font-display);color:#fff;font-style:italic;font-size:clamp(32px,4vw,52px)}
+#proposal .section-subtitle{color:rgba(255,255,255,.4)}
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:44px}
+.timeline-phase{padding:32px 28px;position:relative}
+.timeline-phase::after{
+  content:'→';position:absolute;right:-16px;top:50%;
+  transform:translateY(-50%);font-size:20px;color:rgba(255,255,255,.15);z-index:1;
+}
+.timeline-phase:last-child::after{display:none}
+.timeline-year{font-family:var(--font-display);font-size:52px;font-weight:700;line-height:1;margin-bottom:8px}
+.timeline-label{font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px}
+.timeline-items{list-style:none;display:flex;flex-direction:column;gap:8px}
+.timeline-items li{font-size:13px;color:rgba(255,255,255,.45);padding-left:16px;position:relative;line-height:1.5}
+.timeline-items li::before{content:'·';position:absolute;left:0;font-weight:700;font-size:18px;line-height:1;top:3px}
+.revenue-flow{
+  display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center;
+  margin-top:44px;background:rgba(255,255,255,.03);border-radius:8px;
+  padding:32px;border:1px solid rgba(255,255,255,.06);
+}
+.revenue-col{display:flex;flex-direction:column;gap:10px}
+.revenue-arrow{font-size:24px;color:rgba(255,255,255,.2);text-align:center;padding:0 16px}
+.revenue-box{
+  background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.06);
+  padding:14px 16px;border-left:3px solid var(--accent-color);
+}
+.revenue-box-label{font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.revenue-box-sub{font-size:11px;color:rgba(255,255,255,.35)}
 
-  /* ── Process steps ── */
-  .process-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 48px; }
-  .process-step {
-    background: var(--white); border-radius: var(--radius);
-    border: 1px solid var(--gray-200); padding: 28px;
-    position: relative;
-  }
-  .step-num {
-    font-size: 64px; font-weight: 900; line-height: 1;
-    color: var(--gray-100); position: absolute; top: 16px; right: 20px;
-  }
-  .step-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; position: relative; }
-  .step-desc { font-size: 14px; color: var(--gray-600); line-height: 1.6; position: relative; }
+/* ── Engagement ── */
+#engagement{background:var(--cream)}
+.buyin-wrap{margin-top:40px}
+.buyin-tabs-bar{display:flex;gap:0;border-bottom:1px solid var(--rule)}
+.buyin-tab{
+  background:none;border:none;padding:12px 24px 12px 0;
+  font-family:var(--font-ui);font-size:13px;font-weight:700;
+  color:var(--dust);cursor:pointer;border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:color .2s;
+}
+.buyin-tab-active,.buyin-tab:hover{color:var(--ink)}
+.buyin-tab-active{border-bottom-color:var(--sage)!important}
+.buyin-panels{height:260px;overflow:hidden;position:relative}
+.buyin-panel{
+  background:var(--white);border-radius:0 0 8px 8px;border:1px solid var(--rule);
+  border-top:none;padding:32px;
+}
+.buyin-panel-title{font-family:var(--font-ui);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:14px}
+.buyin-panel p{font-size:13px;color:var(--smoke);line-height:1.75;margin-bottom:10px}
+.buyin-panel p strong{color:var(--ink)}
+.buyin-panel ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.buyin-panel li{font-size:13px;color:var(--smoke);line-height:1.7;padding-left:18px;position:relative}
+.buyin-panel li span{position:absolute;left:0;color:var(--sage);font-weight:700}
+.process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+.process-step{
+  background:var(--white);border-radius:8px;border:1px solid var(--rule);padding:24px;position:relative;overflow:hidden;
+  transition:box-shadow .3s var(--ease);
+}
+.process-step:hover{box-shadow:0 6px 28px rgba(0,0,0,.07)}
+.step-num{
+  font-family:var(--font-display);font-size:80px;font-weight:700;line-height:1;
+  color:rgba(0,0,0,.04);position:absolute;top:8px;right:12px;
+}
+.step-title{font-family:var(--font-ui);font-size:14px;font-weight:700;margin-bottom:8px;position:relative}
+.step-desc{font-size:12px;color:var(--smoke);line-height:1.7;position:relative}
 
-  /* ── Footer ── */
-  footer {
-    background: var(--black); color: rgba(255,255,255,.4);
-    padding: 48px 40px; font-size: 13px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 16px;
-  }
+/* ── Footer ── */
+footer{
+  background:var(--dark);color:rgba(255,255,255,.3);padding:44px 48px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;
+}
+.footer-brand{font-family:var(--font-display);font-size:20px;font-style:italic;
+  color:rgba(255,255,255,.6);display:block;margin-bottom:4px}
+.footer-sub{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.footer-right{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-align:right;line-height:1.8}
 
-  /* ── Utilities ── */
-  .tag {
-    display: inline-block; padding: 4px 12px; border-radius: 100px;
-    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-  }
+/* ── Utilities ── */
+.tag{
+  display:inline-block;padding:4px 12px;border-radius:100px;
+  font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+}
 
-  @media (max-width: 900px) {
-    .scenario-layout, .scenario-layout.reverse { grid-template-columns: 1fr; direction: ltr; }
-    .principles-grid { grid-template-columns: 1fr; }
-    .cars-grid { grid-template-columns: 1fr; }
-    .charts-grid { grid-template-columns: 1fr; }
-    .stat-cards { grid-template-columns: 1fr; }
-    .timeline { grid-template-columns: 1fr; }
-    .process-steps { grid-template-columns: 1fr 1fr; }
-    .revenue-flow { grid-template-columns: 1fr; }
-    .revenue-arrow { transform: rotate(90deg); }
-    nav { padding: 0 20px; }
-    .hero-content { padding: 0 24px 60px; }
-    .container, .container-wide { padding: 0 24px; }
+/* ── Media queries ── */
+@media(max-width:960px){
+  .intro-grid,.cars-grid,.scenario-layout,.scenario-layout.reverse,
+  .charts-grid,.timeline,.principles-grid,.overflow-explanation,
+  .tale-grid,.process-steps,.revenue-flow{
+    grid-template-columns:1fr;direction:ltr
   }
+  .scenario-layout.reverse>*{direction:ltr}
+  .revenue-arrow{transform:rotate(90deg)}
+  nav{padding:0 24px}
+  .hero-content{padding:0 28px 64px}
+  .container,.container-wide{padding:0 28px}
+  .sim-legend{margin:0 28px}
+  footer{padding:32px 28px}
+  .hero-stats{flex-direction:column}
+  .hero-stat{padding:16px 0;margin-right:0;border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+  #overflow-stats{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .scenario-metrics{grid-template-columns:1fr}
+  .process-steps{grid-template-columns:1fr 1fr}
+  #overflow-stats{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+<div class="grain"></div>
 
-<!-- ── Nav ───────────────────────────────────────────────────────────────── -->
+<!-- ── Nav ── -->
 <nav>
   <div class="nav-logo">Streets for the People</div>
   <div class="nav-links">
-    <a href="#introduction">Introduction</a>
+    <a href="#introduction">Intro</a>
     <a href="#insight">Insight</a>
-    <a href="#transformation">Transformation</a>
+    <a href="#transformation">Transform</a>
     <a href="#simulation">Simulation</a>
     <a href="#overflow">Overflow</a>
     <a href="#prediction">Prediction</a>
     <a href="#engagement">Consensus</a>
   </div>
+  <div class="nav-progress"><div class="nav-progress-fill" id="nav-progress-fill"></div></div>
 </nav>
 
-<!-- ── Hero ──────────────────────────────────────────────────────────────── -->
+<!-- ── Hero ── -->
 <section id="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
+  <div class="hero-atmosphere"></div>
+  <div class="hero-lines"></div>
   <div class="hero-content">
-    <p class="hero-eyebrow">INFO-5420 · Spring 2026 · Cornell Tech · Gowanus BID, Brooklyn</p>
-    <h1 class="hero-title">Streets for the People:<br><span style="font-size: clamp(32px, 4.5vw, 64px);">Modeling Car Parking Transitions in the Gowanus BID</span></h1>
-    <p class="hero-subtitle">Designing a data-driven, community-centered strategy for Gowanus's parking and public realm — from insight to consensus.</p>
+    <div class="hero-kicker">INFO-5420 · Spring 2026 · Cornell Tech · Gowanus BID, Brooklyn</div>
+    <h1 class="hero-title">Streets<br>for the<br><em>People</em></h1>
+    <p class="hero-sub">Modeling Car Parking Transitions in the Gowanus BID — from data insight to community consensus.</p>
     <div class="hero-stats">
-      <div class="hero-stat">
+      <div class="hero-stat" style="--i:0">
         <div class="hero-stat-num">2,075</div>
         <div class="hero-stat-label">On-street parking spots today</div>
       </div>
-      <div class="hero-stat">
+      <div class="hero-stat" style="--i:1">
         <div class="hero-stat-num">90%</div>
         <div class="hero-stat-label">Midday occupancy</div>
       </div>
-      <div class="hero-stat">
+      <div class="hero-stat" style="--i:2">
         <div class="hero-stat-num">8,000</div>
         <div class="hero-stat-label">New units by 2034 (rezoning)</div>
       </div>
-      <div class="hero-stat">
+      <div class="hero-stat" style="--i:3">
         <div class="hero-stat-num">5</div>
         <div class="hero-stat-label">Simulated scenarios</div>
       </div>
     </div>
     <div class="hero-scroll">↓ Scroll to explore</div>
   </div>
+  <div class="hero-diagonal"></div>
 </section>
 
-<!-- ── Introduction ──────────────────────────────────────────────────────── -->
+<!-- ── Introduction ── -->
 <section id="introduction">
+  <div class="section-num">01</div>
   <div class="container">
-    <div class="phase-badge" style="background: var(--gray-100); color: var(--gray-600);">The Neighborhood</div>
-    <h2 class="section-title">Gowanus at a Crossroads</h2>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start;">
-      <div>
-        <p style="font-size: 16px; color: var(--gray-600); line-height: 1.8; margin-bottom: 24px;">
-          Gowanus is a low-rise, mixed-use neighborhood in Brooklyn organized around a 1.8-mile tidal canal. For most of the 20th century, it was defined by industry, including gasworks, concrete plants, and warehouses. Today, the neighborhood is undergoing a major transformation, with art studios and breweries moving into former factory spaces and new residential towers rising along the waterfront.
-        </p>
-        <p style="font-size: 16px; color: var(--gray-600); line-height: 1.8; margin-bottom: 24px;">
-          Even as Gowanus changes, its industrial legacy remains visible, most notably in the heavily polluted Gowanus Canal. The canal is one of the most polluted waterways in the United States, which led to its designation as a <a href="https://gowanuscanalconservancy.org/superfund/" target="_blank" style="color: var(--gray-800); text-decoration: underline;">Superfund site</a> in 2010 by the United States Environmental Protection Agency.
-        </p>
-        <p style="font-size: 16px; color: var(--gray-600); line-height: 1.8; margin-bottom: 24px;">
-          Amid ongoing environmental remediation efforts, the city approved the <a href="https://www.nyc.gov/site/nycha/about/comp-mod/gowanus-neighborhood-rezoning.page" target="_blank" style="color: var(--gray-800); text-decoration: underline;">Gowanus Neighborhood Rezoning plan</a> in 2021, one of the largest in the area’s recent history. The plan introduces significantly more housing, projected at approximately 8,500 new units by 2035, while requiring that a portion be affordable.
-        </p>
+    <div class="eyebrow reveal" style="color:var(--smoke)">The Neighborhood</div>
+    <h2 class="section-title reveal d1">Gowanus at a Crossroads</h2>
+    <div class="section-rule reveal d2" style="background:var(--red)"></div>
+    <div class="intro-grid">
+      <div class="intro-body reveal-left d2">
+        <p>Gowanus is a low-rise, mixed-use neighborhood in Brooklyn organized around a 1.8-mile tidal canal. For most of the 20th century, it was defined by industry — gasworks, concrete plants, and warehouses. Today, the neighborhood is undergoing a major transformation, with art studios and breweries moving into former factory spaces and new residential towers rising along the waterfront.</p>
+        <p>Even as Gowanus changes, its industrial legacy remains visible, most notably in the heavily polluted Gowanus Canal — one of the most polluted waterways in the United States, leading to its designation as a <a href="https://gowanuscanalconservancy.org/superfund/" target="_blank">Superfund site</a> in 2010.</p>
+        <p>Amid ongoing environmental remediation, the city approved the <a href="https://www.nyc.gov/site/nycha/about/comp-mod/gowanus-neighborhood-rezoning.page" target="_blank">Gowanus Neighborhood Rezoning plan</a> in 2021 — one of the largest in the area's recent history — introducing approximately 8,500 new units by 2035, while requiring that a portion be affordable.</p>
       </div>
-      <div>
-        <img src="images/gowanusintro.jpeg" alt="Gowanus neighborhood" style="width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); display: block;">
+      <div class="intro-img reveal-right d3">
+        <img src="images/gowanusintro.jpeg" alt="Gowanus neighborhood">
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Insight ────────────────────────────────────────────────────────────── -->
+<!-- ── Insight ── -->
 <section id="insight">
+  <div class="section-num">02</div>
   <div class="container">
-    <div class="phase-badge" style="background:#e8f1fa; color: var(--blue);">Phase 1 — Insight</div>
-    <h2 class="section-title">A Canal of Streets, People (and Cars)</h2>
-    <div style="background: linear-gradient(135deg, #0f5f9c 0%, #1976d2 58%, #31a2f2 100%); border-radius: 18px; padding: 34px 38px; margin-top: 16px; margin-bottom: 32px; border: 1px solid rgba(255,255,255,.18); box-shadow: 0 20px 44px rgba(9,49,84,.26); position: relative; overflow: hidden;">
-      <div style="position: absolute; top: -30px; right: -20px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 70%);"></div>
-      <div style="position: relative; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.78); margin-bottom: 14px;">Gowanus BID Vision</div>
-      <p style="position: relative; font-size: 18px; font-weight: 650; color: var(--white); line-height: 1.7; margin: 0; font-style: italic; max-width: 920px;">A unified, inclusive waterfront that works as everyday public space, not just as the edge of new development. A canal that is clean, accessible, visible, and welcoming to old and new residents, workers, and visitors alike.</p>
-    </div>
-    <div class="section-divider" style="background: var(--blue);"></div>
+    <div class="eyebrow reveal" style="color:var(--blue)">Phase 1 — Insight</div>
+    <h2 class="section-title reveal d1">A Canal of Streets, People <em style="font-family:var(--font-display);font-style:italic">&amp; Cars</em></h2>
+    <div class="section-rule reveal d2" style="background:var(--blue)"></div>
 
-    <!-- Walkability sub-section -->
-    <div style="margin-bottom: 48px;">
-      <h3 style="font-size: 24px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; color: var(--gray-800);">The Streets of Gowanus</h3>
-      <p style="font-size: 15px; color: var(--gray-600); line-height: 1.8; margin-bottom: 28px;">
-        The rezoning envisions Gowanus as a more pedestrian-friendly neighborhood. A central goal is a continuous public walkway along the canal, which involves converting stretches of car-dominated street frontage into green, accessible waterfront space.
-      </p>
-      <img src="images/continuouspath.png" alt="Gowanus continuous waterfront access plan" style="width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); display: block;">
-      <p style="font-size: 11px; color: var(--gray-400); margin-top: 10px; font-style: italic;">NYC Department of City Planning — Gowanus waterfront access plan</p>
+    <div class="bid-vision reveal d2">
+      <div class="bid-vision-label">Gowanus BID Vision</div>
+      <p class="bid-vision-quote">A unified, inclusive waterfront that works as everyday public space, not just as the edge of new development. A canal that is clean, accessible, visible, and welcoming to old and new residents, workers, and visitors alike.</p>
     </div>
 
-    <!-- The People of Gowanus subsection -->
-    <div style="margin-bottom: 48px;">
-      <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 12px; color: var(--gray-800);">The People of Gowanus</h3>
-      <p style="font-size: 15px; color: var(--gray-600); line-height: 1.8; margin-bottom: 28px;">
-        The rezoning brings together four distinct communities, each with different relationships to the neighborhood's streets and parking.
-      </p>
-      <img src="images/The people of Gowanus.jpeg" alt="The people of Gowanus communities illustration" style="width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); display: block;">
+    <div style="margin-bottom:48px" class="reveal d3">
+      <h3 style="font-family:var(--font-ui);font-size:22px;font-weight:700;margin-bottom:12px">The Streets of Gowanus</h3>
+      <p style="font-size:14px;color:var(--smoke);line-height:1.8;margin-bottom:24px">The rezoning envisions Gowanus as a more pedestrian-friendly neighborhood. A central goal is a continuous public walkway along the canal — converting stretches of car-dominated street frontage into green, accessible waterfront space.</p>
+      <img src="images/continuouspath.png" alt="Gowanus continuous waterfront access plan" style="width:100%;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.1);display:block">
+      <p style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--dust);margin-top:8px">NYC Department of City Planning — Gowanus waterfront access plan</p>
     </div>
 
-    <!-- Full Today, Overwhelmed Tomorrow subsection -->
-    <div style="margin-bottom: 40px;">
-      <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 12px; color: var(--gray-800);">The Cars of Gowanus</h3>
-      <p style="font-size: 15px; color: var(--gray-600); line-height: 1.8;">
-        Based on the Gowanus rezoning environmental report (NYC FEIS), curbside parking demand is rising while supply remains constrained. Gowanus already has just over 2,000 on-street spaces, with midday occupancy around 90%, and FEIS projections show only about 1,940 on-street spaces by 2035 as growth continues. <strong style="color: var(--gray-800);">That leaves very limited buffer in the street system, increasing the risk of overflow without a clear absorption strategy for new demand.</strong> The map below shows existing parking spaces across the BID.
-      </p>
+    <div style="margin-bottom:48px" class="reveal">
+      <h3 style="font-family:var(--font-ui);font-size:22px;font-weight:700;margin-bottom:12px">The People of Gowanus</h3>
+      <p style="font-size:14px;color:var(--smoke);line-height:1.8;margin-bottom:24px">The rezoning brings together four distinct communities, each with different relationships to the neighborhood's streets and parking.</p>
+      <img src="images/The people of Gowanus.jpeg" alt="The people of Gowanus" style="width:100%;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.1);display:block">
     </div>
 
-    <div class="cars-grid">
+    <div style="margin-bottom:36px" class="reveal">
+      <h3 style="font-family:var(--font-ui);font-size:22px;font-weight:700;margin-bottom:12px">The Cars of Gowanus</h3>
+      <p style="font-size:14px;color:var(--smoke);line-height:1.8">Based on the Gowanus rezoning environmental report (NYC FEIS), curbside parking demand is rising while supply remains constrained. Gowanus already has just over 2,000 on-street spaces, with midday occupancy around 90%, and FEIS projections show only about 1,940 on-street spaces by 2035 as growth continues. <strong style="color:var(--ink)">That leaves very limited buffer in the street system, increasing the risk of overflow without a clear absorption strategy for new demand.</strong></p>
+    </div>
+
+    <div class="cars-grid reveal">
       <div class="cars-col">
-        <div class="cars-card" style="--accent-color: var(--blue);">
+        <div class="cars-card" style="--accent-color:var(--blue)">
           <div class="cars-metric">2,075</div>
           <div class="cars-copy">On-street parking spots today in the BID.</div>
         </div>
-        <div class="cars-card" style="--accent-color: var(--blue);">
+        <div class="cars-card" style="--accent-color:var(--blue)">
           <div class="cars-metric">90%</div>
           <div class="cars-copy">Current midday occupancy.</div>
         </div>
       </div>
-
       <div class="cars-col">
-        <div class="cars-card" style="--accent-color: var(--gold);">
+        <div class="cars-card" style="--accent-color:var(--amber)">
           <div class="cars-metric">+8,000</div>
           <div class="cars-copy">New residential units approved under the 2021 rezoning plan.</div>
         </div>
-        <div class="cars-card" style="--accent-color: var(--gold);">
-          <div class="cars-metric" style="font-size: 20px; letter-spacing: .04em;">NO MINIMUM</div>
+        <div class="cars-card" style="--accent-color:var(--amber)">
+          <div class="cars-metric" style="font-size:clamp(18px,2.5vw,28px);letter-spacing:.02em;line-height:1.2">NO MINIMUM</div>
           <div class="cars-copy">parking is required in new residential buildings.</div>
         </div>
       </div>
-
       <div class="cars-col">
-        <div class="cars-card" style="--accent-color: var(--red);">
+        <div class="cars-card" style="--accent-color:var(--red)">
           <div class="cars-metric">1,940</div>
-          <div class="cars-copy">Projected on-street spots by 2035, per <a href="https://www.nyc.gov/assets/planning/download/pdf/applicants/env-review/gowanus/14-feis.pdf" target="_blank" style="color: inherit; text-decoration: underline;">NYC FEIS, Table 14-1</a>.</div>
+          <div class="cars-copy">Projected on-street spots by 2035, per <a href="https://www.nyc.gov/assets/planning/download/pdf/applicants/env-review/gowanus/14-feis.pdf" target="_blank" style="color:inherit;text-decoration:underline">NYC FEIS, Table 14-1</a>.</div>
         </div>
-        <div class="cars-card" style="--accent-color: var(--red);">
+        <div class="cars-card" style="--accent-color:var(--red)">
           <div class="cars-metric">127%</div>
-          <div class="cars-copy">Projected occupancy after rezoning in 2035, per <a href="https://www.nyc.gov/assets/planning/download/pdf/applicants/env-review/gowanus/14-feis.pdf" target="_blank" style="color: inherit; text-decoration: underline;">NYC FEIS, Table 14-1</a>.</div>
+          <div class="cars-copy">Projected occupancy after rezoning in 2035, per <a href="https://www.nyc.gov/assets/planning/download/pdf/applicants/env-review/gowanus/14-feis.pdf" target="_blank" style="color:inherit;text-decoration:underline">NYC FEIS, Table 14-1</a>.</div>
         </div>
       </div>
     </div>
 
-    <div id="map"></div>
-    <div class="map-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#2196f3"></div> Parking spot (available)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#e53935"></div> Parking spot (occupied)</div>
-      <div class="legend-item"><div class="legend-dot" style="background: none; border: 2px solid #e53935; border-radius:0; width:14px; height:10px;"></div> BID boundary</div>
-      <div class="legend-item" style="margin-left:auto; font-style:italic; color: #aaa;">Map uses real GIS data — Gowanus BID, Brooklyn</div>
+    <div class="reveal">
+      <div id="map"></div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#2196f3"></div>Available spot</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e53935"></div>Occupied spot</div>
+        <div class="legend-item"><div class="legend-dot" style="background:none;border:2px solid #e53935;border-radius:0;width:12px;height:8px"></div>BID boundary</div>
+        <div class="legend-item" style="margin-left:auto;color:var(--dust);font-style:italic">Real GIS data — Gowanus BID, Brooklyn</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ── Transformation ──────────────────────────────────────────────────────── -->
+<!-- ── Transformation ── -->
 <section id="transformation">
+  <div class="section-num">03</div>
   <div class="container">
-    <div class="phase-badge" style="background:#e8f1fa; color: var(--blue);">Phase 2 — Transformation</div>
-    <h2 class="section-title">Changing the Ways We Park</h2>
-    <div class="section-divider" style="background: var(--blue);"></div>
+    <div class="eyebrow reveal" style="color:var(--blue)">Phase 2 — Transformation</div>
+    <h2 class="section-title reveal d1">Changing the Ways We Park</h2>
+    <div class="section-rule reveal d2" style="background:var(--blue)"></div>
 
-    <div style="margin-top: 80px; padding: 48px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
-      <div class="phase-badge" style="background:rgba(33,150,243,.1); color: var(--blue); margin-bottom: 16px;">Precedence</div>
-      <h3 style="font-size: 28px; font-weight: 800; margin-bottom: 16px; color: var(--gray-800);">A Tale of Three Rezonings</h3>
-      <p style="font-size: 15px; color: var(--gray-600); line-height: 1.8;">Historical NYC data proves that without proactive curb management, residential booms break local infrastructure. Here is how Gowanus compares to precedent.</p>
+    <div class="precedence-wrap reveal d2">
+      <div class="phase-chip reveal" style="background:rgba(26,111,173,.1);color:var(--blue)"><span class="dot"></span>Precedence</div>
+      <h3 style="font-family:var(--font-ui);font-size:26px;font-weight:700;margin-bottom:12px;color:var(--ink)">A Tale of Three Rezonings</h3>
+      <p style="font-size:14px;color:var(--smoke);line-height:1.75;margin-bottom:28px">Historical NYC data proves that without proactive curb management, residential booms break local infrastructure. Here is how Gowanus compares to precedent.</p>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 32px;">
-        
-        <div style="background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 28px; border-top: 4px solid var(--red);">
-          <div class="tag" style="background:var(--red-l); color:var(--red); margin-bottom:16px;">The Capacity Crisis</div>
-          <h4 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--gray-800);">Greenpoint-Williamsburg</h4>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Plan:</strong> 2005 industrial-to-residential waterfront rezoning.</li>
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Problem:</strong> Planners assumed a drop in industrial trucks would offset new cars. Instead, personal vehicles and delivery vans overwhelmed the legacy street grid.</li>
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Solution:</strong> Reactive, highly controversial "road diets" facing heavy political backlash.</li>
-            <li style="font-size: 14px; color: var(--red); background: var(--red-l); padding: 12px; border-radius: 8px; margin-top: 8px;"><strong>Gowanus Correlation:</strong> Proves that failing to proactively manage the curb during a high-density waterfront rezoning inevitably leads to massive <strong>car overflow</strong> and gridlock, directly mirroring the risks of adding 8,000 units to Gowanus's already saturated streets.</li>
-            <li style="font-size: 13px; color: var(--gray-400); margin-top: 12px; border-top: 1px solid var(--gray-100); padding-top: 12px;"><strong>Sources:</strong> <a href="https://www.nyc.gov/assets/planning/download/pdf/plans/greenpoint-williamsburg/greenpointwill.pdf" target="_blank" style="color: var(--gray-600);">NYC DCP: Greenpoint-Williamsburg Land Use Plan</a></li>
-            <li style="font-size: 13px; color: var(--gray-400); margin-top: 0px;"><a href="https://www.6sqft.com/mcguinness-boulevard-to-be-redesigned-with-two-protected-bike-lanes-after-all/" target="_blank" style="color: var(--gray-600);">6sqft: McGuinness Blvd Redesign & Traffic Violence</a></li>
+      <div class="tale-grid">
+        <div class="tale-card" style="--card-accent:var(--red)">
+          <div class="tale-tag" style="background:var(--red-l);color:var(--red)">The Capacity Crisis</div>
+          <div class="tale-h">Greenpoint-Williamsburg</div>
+          <ul class="tale-list">
+            <li><strong>The Plan:</strong> 2005 industrial-to-residential waterfront rezoning.</li>
+            <li><strong>The Problem:</strong> Planners assumed a drop in industrial trucks would offset new cars. Instead, personal vehicles and delivery vans overwhelmed the legacy street grid.</li>
+            <li><strong>The Solution:</strong> Reactive, highly controversial "road diets" facing heavy political backlash.</li>
           </ul>
+          <div class="tale-callout" style="color:var(--red);background:var(--red-l)"><strong>Gowanus Correlation:</strong> Proves that failing to proactively manage the curb during a high-density waterfront rezoning inevitably leads to massive car overflow and gridlock.</div>
+          <div class="tale-source"><a href="https://www.nyc.gov/assets/planning/download/pdf/plans/greenpoint-williamsburg/greenpointwill.pdf" target="_blank">NYC DCP: Greenpoint-Williamsburg Land Use Plan</a></div>
         </div>
-
-        <div style="background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 28px; border-top: 4px solid var(--gold);">
-          <div class="tag" style="background:var(--gold-l); color:var(--gold); margin-bottom:16px;">The Latent Demand Trap</div>
-          <h4 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--gray-800);">Long Island City</h4>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Plan:</strong> 2001/2008 rezonings creating 20k+ new housing units.</li>
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Problem:</strong> Developers built excessive parking as luxury amenities, inducing car ownership in a transit-rich area and causing massive choke points.</li>
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Solution:</strong> Scrambling to convert free parking into commercial loading zones.</li>
-            <li style="font-size: 14px; color: var(--gold); background: var(--gold-l); padding: 12px; border-radius: 8px; margin-top: 8px;"><strong>Gowanus Correlation:</strong> Demonstrates the latent demand trap. High-density luxury development induces car ownership regardless of <strong>subway access</strong>. If Gowanus does not actively disincentivize private vehicles, new residents will flood the neighborhood with cars.</li>
-            <li style="font-size: 13px; color: var(--gray-400); margin-top: 12px; border-top: 1px solid var(--gray-100); padding-top: 12px;"><strong>Source:</strong> <a href="https://www.nyc.gov/assets/planning/download/pdf/plans/long-island-city-mixed-use/lic.pdf" target="_blank" style="color: var(--gray-600);">NYC DCP: Long Island City Rezoning Framework</a></li>
-            <li style="font-size: 13px; color: var(--gray-400); margin-top: 0px;"><a href="https://citylimits.org/past-rezonings-shape-long-island-citys-feelings-about-de-blasio-plan/" target="_blank" style="color: var(--gray-600);">City Limits: Past Rezonings Shape LIC Infrastructure</a></li>
+        <div class="tale-card" style="--card-accent:var(--amber)">
+          <div class="tale-tag" style="background:var(--amber-l);color:var(--amber)">The Latent Demand Trap</div>
+          <div class="tale-h">Long Island City</div>
+          <ul class="tale-list">
+            <li><strong>The Plan:</strong> 2001/2008 rezonings creating 20k+ new housing units.</li>
+            <li><strong>The Problem:</strong> Developers built excessive parking as luxury amenities, inducing car ownership in a transit-rich area and causing massive choke points.</li>
+            <li><strong>The Solution:</strong> Scrambling to convert free parking into commercial loading zones.</li>
           </ul>
+          <div class="tale-callout" style="color:var(--amber);background:var(--amber-l)"><strong>Gowanus Correlation:</strong> Demonstrates the latent demand trap. High-density luxury development induces car ownership regardless of subway access.</div>
+          <div class="tale-source"><a href="https://www.nyc.gov/assets/planning/download/pdf/plans/long-island-city-mixed-use/lic.pdf" target="_blank">NYC DCP: Long Island City Rezoning Framework</a></div>
         </div>
-
-        <div style="background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 28px; border-top: 4px solid var(--green);">
-          <div class="tag" style="background:var(--green-l); color:var(--green); margin-bottom:16px;">The Centralized Blueprint</div>
-          <h4 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--gray-800);">Hudson Yards</h4>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Plan:</strong> 2005 mega-rezoning over the West Side rail yards.</li>
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Problem:</strong> 20k units and 26M sq ft of office space threatening to break the Lincoln Tunnel traffic flow.</li>
-            <li style="font-size: 14px; color: var(--gray-600);"><strong style="color: var(--gray-800);">The Solution:</strong> Implemented "parking maximums" and mandated centralized, off-street subterranean garages and loading docks.</li>
-            <li style="font-size: 14px; color: var(--green); background: var(--green-l); padding: 12px; border-radius: 8px; margin-top: 8px;"><strong>Gowanus Correlation:</strong> Highlights the absolute necessity of <strong>centralized parking</strong>. By capping spots with parking maximums and mandating off-street structures, Hudson Yards absorbed an unprecedented influx, providing a blueprint for managing Gowanus's growth without sacrificing the public realm.</li>
-            <li style="font-size: 13px; color: var(--gray-400); margin-top: 12px; border-top: 1px solid var(--gray-100); padding-top: 12px;"><strong>Source:</strong> <a href="https://www.nyc.gov/assets/planning/download/pdf/plans/hudson-yards/hy_chap19_t_fgeis_final.pdf" target="_blank" style="color: var(--gray-600);">NYC DCP: Hudson Yards FGEIS</a></li>
-            <li style="font-size: 13px; color: var(--gray-400); margin-top: 0px;"><a href="https://nyc.streetsblog.org/2010/04/22/hard-cap-on-hudson-yards-parking-takes-effect-will-more-reforms-follow" target="_blank" style="color: var(--gray-600);">Streetsblog: Hard Cap on Hudson Yards Parking</a></li>          </ul>
+        <div class="tale-card" style="--card-accent:var(--sage)">
+          <div class="tale-tag" style="background:var(--sage-l);color:var(--sage)">The Centralized Blueprint</div>
+          <div class="tale-h">Hudson Yards</div>
+          <ul class="tale-list">
+            <li><strong>The Plan:</strong> 2005 mega-rezoning over the West Side rail yards.</li>
+            <li><strong>The Problem:</strong> 20k units and 26M sq ft of office space threatening to break Lincoln Tunnel traffic flow.</li>
+            <li><strong>The Solution:</strong> "Parking maximums" + mandated centralized, off-street subterranean garages.</li>
+          </ul>
+          <div class="tale-callout" style="color:var(--sage);background:var(--sage-l)"><strong>Gowanus Correlation:</strong> Highlights the absolute necessity of centralized parking — capping spots with parking maximums and mandating off-street structures.</div>
+          <div class="tale-source"><a href="https://www.nyc.gov/assets/planning/download/pdf/plans/hudson-yards/hy_chap19_t_fgeis_final.pdf" target="_blank">NYC DCP: Hudson Yards FGEIS</a></div>
         </div>
       </div>
     </div>
-    <div style="margin-top: 56px;">
-      <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 8px; color: var(--gray-800);">Intervention Principles</h3>
-      <p style="font-size: 15px; color: var(--gray-600); line-height: 1.8; margin-bottom: 16px;">The strategy is to <strong style="color: var(--gray-800);">reallocate parking, not remove it outright</strong>: convert the least disruptive canal-edge curb space and shift displaced vehicles into centralized garages so overall supply stays demand-neutral.</p>
-      <p style="font-size: 15px; color: var(--gray-600); line-height: 1.8; margin-bottom: 32px;">The three principles below guide our approach, shaping the simulations we built to address the parking problem.</p>
+
+    <div style="margin-top:56px" class="reveal">
+      <h3 style="font-family:var(--font-ui);font-size:20px;font-weight:700;margin-bottom:8px">Intervention Principles</h3>
+      <p style="font-size:14px;color:var(--smoke);line-height:1.75;margin-bottom:28px">The strategy is to <strong style="color:var(--ink)">reallocate parking, not remove it outright</strong> — converting the least disruptive canal-edge curb space and shifting displaced vehicles into centralized garages so overall supply stays demand-neutral.</p>
       <div class="principles-grid">
         <div class="principle-card">
           <div class="principle-num">01</div>
@@ -655,7 +774,7 @@
         <div class="principle-card">
           <div class="principle-num">02</div>
           <div class="principle-title">Reclaim the Canal Edge</div>
-          <p class="principle-desc">Reduce harmful curb occupation near the water. Streets crossing the canal should prioritize pedestrian access, turning dead-ends into shared public amenities rather than parking lots.</p>
+          <p class="principle-desc">Reduce harmful curb occupation near the water. Streets crossing the canal should prioritize pedestrian access, turning dead-ends into shared public amenities.</p>
         </div>
         <div class="principle-card">
           <div class="principle-num">03</div>
@@ -667,79 +786,52 @@
   </div>
 </section>
 
-<!-- ── Simulation ─────────────────────────────────────────────────────────── -->
-<section id="simulation" style="padding-top: 0; background: #f4f9ff;">
-  <div class="container" style="padding-top: 20px; padding-bottom: 20px;">
-    <div class="phase-badge" style="background:#fdf3dc; color: var(--gold);">Phase 3 — Simulation</div>
-    <h2 class="section-title">Five Futures for Gowanus</h2>
-    <p class="section-subtitle">Each scenario was built in GAMA — an agent-based simulation platform — using real Gowanus road networks and parking data. Every dot is a car. Every cycle is 10 seconds of simulated time. Run for 400+ cycles to see the full dynamics.</p>
-    <div class="section-divider" style="background: var(--gold);"></div>
-
-    <div class="sim-legend">
-      <div class="sim-legend-item">
-        <span class="sim-legend-swatch" style="background:#27ae60;"></span>
-        <span class="sim-legend-label">Parked in garage</span>
-      </div>
-      <div class="sim-legend-item">
-        <span class="sim-legend-swatch" style="background:#f0c040;"></span>
-        <span class="sim-legend-label">Parked on street</span>
-      </div>
-      <div class="sim-legend-item">
-        <span class="sim-legend-swatch" style="background:#2196f3;"></span>
-        <span class="sim-legend-label">Seeking garage</span>
-      </div>
-      <div class="sim-legend-item">
-        <span class="sim-legend-swatch" style="background:#ff9800;"></span>
-        <span class="sim-legend-label">Seeking street spot</span>
-      </div>
-      <div class="sim-legend-item">
-        <span class="sim-legend-swatch" style="background:#9c27b0;"></span>
-        <span class="sim-legend-label">Leaving without parking (overflow)</span>
-      </div>
+<!-- ── Simulation ── -->
+<section id="simulation" style="padding-top:0;padding-bottom:0">
+  <div class="sim-header">
+    <div class="sim-header-atmo"></div>
+    <div class="container" style="position:relative;z-index:1">
+      <div class="section-num dark-num">04</div>
+      <div class="eyebrow reveal">Phase 3 — Simulation</div>
+      <h2 class="section-title reveal d1">Five Futures for Gowanus</h2>
+      <p class="section-subtitle reveal d2">Each scenario was built in GAMA — an agent-based simulation platform — using real Gowanus road networks and parking data. Every dot is a car. Every cycle is 10 seconds of simulated time.</p>
+      <div class="section-rule reveal d3"></div>
     </div>
   </div>
 
+  <div class="sim-legend">
+    <div class="sim-legend-item"><span class="sim-legend-swatch" style="background:#27ae60"></span>Parked in garage</div>
+    <div class="sim-legend-item"><span class="sim-legend-swatch" style="background:#f0c040"></span>Parked on street</div>
+    <div class="sim-legend-item"><span class="sim-legend-swatch" style="background:#2196f3"></span>Seeking garage</div>
+    <div class="sim-legend-item"><span class="sim-legend-swatch" style="background:#ff9800"></span>Seeking street spot</div>
+    <div class="sim-legend-item"><span class="sim-legend-swatch" style="background:#9c27b0"></span>Leaving without parking (overflow)</div>
+  </div>
+
   <!-- Scenario 1 -->
-  <div class="scenario-section" style="--accent-color: var(--blue); --chip-bg: var(--blue-l); --chip-border: #c8dff0; background: #edf6fd;">
+  <div class="scenario-section" style="--accent-color:var(--blue);--chip-bg:var(--blue-l);--chip-border:#c0d8ef;background:#f0f6fb">
     <div class="container">
       <div class="scenario-layout">
-        <div class="scenario-video-wrap">
-          <video controls preload="metadata" poster="">
+        <div class="scenario-video-wrap reveal-left">
+          <video controls preload="metadata">
             <source src="videos/01_2024_baseline.mp4" type="video/mp4">
           </video>
           <div class="scenario-video-label">Scenario 1 of 5</div>
-          <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,.18); background: #111;">
-            <img
-              src="images/degrawbase2.png"
-              alt="Degraw Street canal edge reference image"
-              style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block;"
-            >
+          <div style="border-top:1px solid rgba(0,0,0,.08)">
+            <img src="images/degrawbase2.png" alt="Degraw Street canal edge reference" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block">
           </div>
         </div>
-        <div class="scenario-info">
+        <div class="scenario-info reveal-right d2">
           <div>
-            <div class="tag" style="background:var(--blue-l); color:var(--blue); margin-bottom:12px;">2024 · Baseline</div>
-            <div class="scenario-year" style="color: var(--blue);">2024</div>
+            <div class="scenario-tag" style="background:var(--blue-l);color:var(--blue)">2026 · Baseline</div>
+            <div class="scenario-year" style="color:var(--blue)">2026</div>
             <div class="scenario-name">Today's Gowanus — Street Only</div>
-            <p class="scenario-desc">This is the current state. 300 sampled street spots running at 90% initial occupancy. Demand is balanced — cars arrive, park, dwell, and leave at roughly equal rates. The streets are full but functional.</p>
+            <p class="scenario-desc">The current state. 300 sampled street spots running at 90% initial occupancy. Demand is balanced — cars arrive, park, dwell, and leave at roughly equal rates. The streets are full but functional.</p>
           </div>
           <div class="scenario-metrics">
-            <div class="metric-chip" style="--chip-bg: var(--blue-l); --chip-border: #c8dff0;">
-              <div class="metric-chip-label">Street Occupancy</div>
-              <div class="metric-chip-value" style="color: var(--blue);">~90%</div>
-            </div>
-            <div class="metric-chip" style="--chip-bg: var(--blue-l); --chip-border: #c8dff0;">
-              <div class="metric-chip-label">Overflow</div>
-              <div class="metric-chip-value" style="color: var(--blue);">Low</div>
-            </div>
-            <div class="metric-chip" style="--chip-bg: var(--blue-l); --chip-border: #c8dff0;">
-              <div class="metric-chip-label">Garages</div>
-              <div class="metric-chip-value" style="color: var(--blue);">None</div>
-            </div>
-            <div class="metric-chip" style="--chip-bg: var(--blue-l); --chip-border: #c8dff0;">
-              <div class="metric-chip-label">Status</div>
-              <div class="metric-chip-value" style="color: var(--blue);">Stable</div>
-            </div>
+            <div class="metric-chip"><div class="metric-chip-label">Street Occupancy</div><div class="metric-chip-value" style="color:var(--blue)">~90%</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Overflow</div><div class="metric-chip-value" style="color:var(--blue)">Low</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Garages</div><div class="metric-chip-value" style="color:var(--blue)">None</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Status</div><div class="metric-chip-value" style="color:var(--blue)">Stable</div></div>
           </div>
           <div class="scenario-what">
             <h4>What this means for residents</h4>
@@ -755,49 +847,33 @@
   </div>
 
   <!-- Scenario 2 -->
-  <div class="scenario-section" style="--accent-color: var(--gold); --chip-bg: var(--gold-l); --chip-border: #e8d5a0; background: #fff9ec;">
+  <div class="scenario-section" style="--accent-color:var(--gold);--chip-bg:var(--gold-l);--chip-border:#e0d090;background:#fdf8ed">
     <div class="container">
       <div class="scenario-layout reverse">
-        <div class="scenario-video-wrap">
+        <div class="scenario-video-wrap reveal-right">
           <video controls preload="metadata">
             <source src="videos/02_2029_no_action.mp4" type="video/mp4">
           </video>
           <div class="scenario-video-label">Scenario 2 of 5</div>
-          <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,.18); background: #111;">
-            <img
-              src="images/2029_no_change.png"
-              alt="2029 no action street condition render"
-              style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block;"
-            >
+          <div style="border-top:1px solid rgba(0,0,0,.08)">
+            <img src="images/2029_no_change.png" alt="2029 no action" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block">
           </div>
         </div>
-        <div class="scenario-info">
+        <div class="scenario-info reveal-left d2">
           <div>
-            <div class="tag" style="background:var(--gold-l); color:var(--gold); margin-bottom:12px;">2029 · No Action</div>
-            <div class="scenario-year" style="color: var(--gold);">2029</div>
+            <div class="scenario-tag" style="background:var(--gold-l);color:var(--gold)">2029 · No Action</div>
+            <div class="scenario-year" style="color:var(--gold)">2029</div>
             <div class="scenario-name">Five Years On — Doing Nothing</div>
             <p class="scenario-desc">The first wave of rezoning units arrives. Demand increases 30%. Streets push toward 97% occupancy. The overflow chart starts climbing — cars circling the BID unable to find a spot. Purple dots multiply.</p>
           </div>
           <div class="scenario-metrics">
-            <div class="metric-chip">
-              <div class="metric-chip-label">Street Occupancy</div>
-              <div class="metric-chip-value" style="color: var(--gold);">~97%</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Overflow</div>
-              <div class="metric-chip-value" style="color: var(--gold);">Growing</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Garages</div>
-              <div class="metric-chip-value" style="color: var(--gold);">None</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Status</div>
-              <div class="metric-chip-value" style="color: var(--gold);">Stressed</div>
-            </div>
+            <div class="metric-chip"><div class="metric-chip-label">Street Occupancy</div><div class="metric-chip-value" style="color:var(--gold)">~97%</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Overflow</div><div class="metric-chip-value" style="color:var(--gold)">Growing</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Garages</div><div class="metric-chip-value" style="color:var(--gold)">None</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Status</div><div class="metric-chip-value" style="color:var(--gold)">Stressed</div></div>
           </div>
-          <div class="scenario-what" style="border-color: var(--gold); background: var(--gold-l);">
-            <h4 style="color: var(--gold);">What this means for residents</h4>
+          <div class="scenario-what" style="border-color:var(--gold);background:var(--gold-l)">
+            <h4 style="color:var(--gold)">What this means for residents</h4>
             <ul>
               <li>Residents and new arrivals flood the same streets — visitors are pushed out</li>
               <li>Local businesses begin losing customers who can't find parking</li>
@@ -810,49 +886,33 @@
   </div>
 
   <!-- Scenario 3 -->
-  <div class="scenario-section" style="--accent-color: var(--green); --chip-bg: var(--green-l); --chip-border: #b0ddc0; background: #f4fbf7;">
+  <div class="scenario-section" style="--accent-color:var(--green);--chip-bg:var(--green-l);--chip-border:#a8d8b8;background:#f0faf4">
     <div class="container">
       <div class="scenario-layout">
-        <div class="scenario-video-wrap">
+        <div class="scenario-video-wrap reveal-left">
           <video controls preload="metadata">
             <source src="videos/03_2029_mixed_garages.mp4" type="video/mp4">
           </video>
           <div class="scenario-video-label">Scenario 3 of 5</div>
-          <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,.18); background: #111;">
-            <img
-              src="images/2029_half_change.png"
-              alt="2029 mixed garages street condition render"
-              style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block;"
-            >
+          <div style="border-top:1px solid rgba(0,0,0,.08)">
+            <img src="images/2029_half_change.png" alt="2029 mixed garages" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block">
           </div>
         </div>
-        <div class="scenario-info">
+        <div class="scenario-info reveal-right d2">
           <div>
-            <div class="tag" style="background:var(--green-l); color:var(--green); margin-bottom:12px;">2029 · Mixed Garages</div>
-            <div class="scenario-year" style="color: var(--green);">2029</div>
+            <div class="scenario-tag" style="background:var(--green-l);color:var(--green)">2029 · Mixed Garages</div>
+            <div class="scenario-year" style="color:var(--green)">2029</div>
             <div class="scenario-name">Five Years On — Garage Policy Active</div>
-            <p class="scenario-desc">Four structured garages open across the BID. Residents are routed to garages first; visitors keep the street spots. Street occupancy drops to 65%. The gold garage circles appear — residents are absorbing into the new system.</p>
+            <p class="scenario-desc">Four structured garages open across the BID. Residents are routed to garages first; visitors keep the street spots. Street occupancy drops to 65%. Gold garage circles appear — residents are absorbing into the new system.</p>
           </div>
           <div class="scenario-metrics">
-            <div class="metric-chip">
-              <div class="metric-chip-label">Street Occupancy</div>
-              <div class="metric-chip-value" style="color: var(--green);">~65%</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Overflow</div>
-              <div class="metric-chip-value" style="color: var(--green);">Near Zero</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Garages</div>
-              <div class="metric-chip-value" style="color: var(--green);">4 open</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Capacity</div>
-              <div class="metric-chip-value" style="color: var(--green);">320 spots</div>
-            </div>
+            <div class="metric-chip"><div class="metric-chip-label">Street Occupancy</div><div class="metric-chip-value" style="color:var(--green)">~65%</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Overflow</div><div class="metric-chip-value" style="color:var(--green)">Near Zero</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Garages</div><div class="metric-chip-value" style="color:var(--green)">4 open</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Capacity</div><div class="metric-chip-value" style="color:var(--green)">320 spots</div></div>
           </div>
-          <div class="scenario-what" style="border-color: var(--green); background: var(--green-l);">
-            <h4 style="color: var(--green);">What this means for residents</h4>
+          <div class="scenario-what" style="border-color:var(--green);background:var(--green-l)">
+            <h4 style="color:var(--green)">What this means for residents</h4>
             <ul>
               <li>Residents get guaranteed parking at ~$900/yr subsidized permit rate</li>
               <li>Street spots freed for visitors — businesses see more foot traffic</li>
@@ -865,49 +925,33 @@
   </div>
 
   <!-- Scenario 4 -->
-  <div class="scenario-section" style="--accent-color: var(--red); --chip-bg: var(--red-l); --chip-border: #f0b8b2; background: #fdf1f0;">
+  <div class="scenario-section" style="--accent-color:var(--red);--chip-bg:var(--red-l);--chip-border:#f0b0a8;background:#fdf0ee">
     <div class="container">
       <div class="scenario-layout reverse">
-        <div class="scenario-video-wrap">
+        <div class="scenario-video-wrap reveal-right">
           <video controls preload="metadata">
             <source src="videos/04_2034_no_action.mp4" type="video/mp4">
           </video>
           <div class="scenario-video-label">Scenario 4 of 5</div>
-          <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,.18); background: #111;">
-            <img
-              src="images/2034_no_change.png"
-              alt="2034 no intervention street condition render"
-              style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block;"
-            >
+          <div style="border-top:1px solid rgba(0,0,0,.08)">
+            <img src="images/2034_no_change.png" alt="2034 no intervention" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block">
           </div>
         </div>
-        <div class="scenario-info">
+        <div class="scenario-info reveal-left d2">
           <div>
-            <div class="tag" style="background:var(--red-l); color:var(--red); margin-bottom:12px;">2034 · No Action</div>
-            <div class="scenario-year" style="color: var(--red);">2034</div>
+            <div class="scenario-tag" style="background:var(--red-l);color:var(--red)">2034 · No Action</div>
+            <div class="scenario-year" style="color:var(--red)">2034</div>
             <div class="scenario-name">Full Buildout — No Intervention</div>
             <p class="scenario-desc">All 8,000 rezoning units occupied. Streets pushed to 99% occupancy. The overflow chart rises steeply — a high and growing stream of cars leaving the BID without parking. Watch the purple dots accumulate.</p>
           </div>
           <div class="scenario-metrics">
-            <div class="metric-chip">
-              <div class="metric-chip-label">Street Occupancy</div>
-              <div class="metric-chip-value" style="color: var(--red);">~99%</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Overflow</div>
-              <div class="metric-chip-value" style="color: var(--red);">High</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Garages</div>
-              <div class="metric-chip-value" style="color: var(--red);">None</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Status</div>
-              <div class="metric-chip-value" style="color: var(--red);">Crisis</div>
-            </div>
+            <div class="metric-chip"><div class="metric-chip-label">Street Occupancy</div><div class="metric-chip-value" style="color:var(--red)">~99%</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Overflow</div><div class="metric-chip-value" style="color:var(--red)">High</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Garages</div><div class="metric-chip-value" style="color:var(--red)">None</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Status</div><div class="metric-chip-value" style="color:var(--red)">Crisis</div></div>
           </div>
-          <div class="scenario-what" style="border-color: var(--red); background: var(--red-l);">
-            <h4 style="color: var(--red);">What this means for residents</h4>
+          <div class="scenario-what" style="border-color:var(--red);background:var(--red-l)">
+            <h4 style="color:var(--red)">What this means for residents</h4>
             <ul>
               <li>Streets are functionally at capacity — parking is a daily frustration</li>
               <li>Every overflow car is a lost customer for a Gowanus business</li>
@@ -920,49 +964,33 @@
   </div>
 
   <!-- Scenario 5 -->
-  <div class="scenario-section" style="--accent-color: var(--green); --chip-bg: var(--green-l); --chip-border: #b0ddc0; background: #f0faf4;">
+  <div class="scenario-section" style="--accent-color:var(--green);--chip-bg:var(--green-l);--chip-border:#a8d8b8;background:#eef8f2">
     <div class="container">
       <div class="scenario-layout">
-        <div class="scenario-video-wrap">
+        <div class="scenario-video-wrap reveal-left">
           <video controls preload="metadata">
             <source src="videos/05_2034_garage_only.mp4" type="video/mp4">
           </video>
           <div class="scenario-video-label">Scenario 5 of 5</div>
-          <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,.18); background: #111;">
-            <img
-              src="images/degrawtransform2.png"
-              alt="Degraw Street pedestrian-friendly transformation reference image"
-              style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block;"
-            >
+          <div style="border-top:1px solid rgba(0,0,0,.08)">
+            <img src="images/degrawtransform2.png" alt="Degraw Street transformation" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block">
           </div>
         </div>
-        <div class="scenario-info">
+        <div class="scenario-info reveal-right d2">
           <div>
-            <div class="tag" style="background:var(--green-l); color:var(--green); margin-bottom:12px;">2034 · Garage Only</div>
-            <div class="scenario-year" style="color: var(--green);">2034</div>
+            <div class="scenario-tag" style="background:var(--green-l);color:var(--green)">2034 · Garage Only</div>
+            <div class="scenario-year" style="color:var(--green)">2034</div>
             <div class="scenario-name">Full Buildout — Garage Policy Enforced</div>
-            <p class="scenario-desc">Street parking eliminated. Seven garages operate across the BID. All vehicles — residents and visitors — must use structured parking. Overflow drops to near zero. The freed curb becomes space for people: wider sidewalks, trees, outdoor seating.</p>
+            <p class="scenario-desc">Street parking eliminated. Seven garages operate across the BID. All vehicles must use structured parking. Overflow drops to near zero. The freed curb becomes space for people: wider sidewalks, trees, outdoor seating.</p>
           </div>
           <div class="scenario-metrics">
-            <div class="metric-chip">
-              <div class="metric-chip-label">Street Spots</div>
-              <div class="metric-chip-value" style="color: var(--green);">Zero</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Overflow</div>
-              <div class="metric-chip-value" style="color: var(--green);">Near Zero</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Garages</div>
-              <div class="metric-chip-value" style="color: var(--green);">7 open</div>
-            </div>
-            <div class="metric-chip">
-              <div class="metric-chip-label">Capacity</div>
-              <div class="metric-chip-value" style="color: var(--green);">700 spots</div>
-            </div>
+            <div class="metric-chip"><div class="metric-chip-label">Street Spots</div><div class="metric-chip-value" style="color:var(--green)">Zero</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Overflow</div><div class="metric-chip-value" style="color:var(--green)">Near Zero</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Garages</div><div class="metric-chip-value" style="color:var(--green)">7 open</div></div>
+            <div class="metric-chip"><div class="metric-chip-label">Capacity</div><div class="metric-chip-value" style="color:var(--green)">700 spots</div></div>
           </div>
-          <div class="scenario-what" style="border-color: var(--green); background: var(--green-l);">
-            <h4 style="color: var(--green);">What this means for residents</h4>
+          <div class="scenario-what" style="border-color:var(--green);background:var(--green-l)">
+            <h4 style="color:var(--green)">What this means for residents</h4>
             <ul>
               <li>Guaranteed parking for all residents via the permit system</li>
               <li>Freed curb space reclaimed for people — not cars</li>
@@ -975,107 +1003,77 @@
   </div>
 </section>
 
-<!-- ── Overflow Pressure Map ──────────────────────────────────────────────── -->
-<section id="overflow" style="padding: 80px 0; background: #0f0f0f; color: #fff;">
+<!-- ── Overflow ── -->
+<section id="overflow">
+  <div class="section-num dark-num">05</div>
   <div class="container">
-    <div class="phase-badge" style="background:rgba(220,50,40,.15); color:#ff6b6b;">Overflow Pressure</div>
-    <h2 class="section-title" style="color:#fff;">What Happens When There's No Room?</h2>
-    <p class="section-subtitle" style="color:rgba(255,255,255,.5);">
-      Cars that can't find parking in the BID don't disappear — they spill outward into surrounding
-      neighborhoods, turning a Gowanus problem into a Carroll Gardens, Park Slope, and Red Hook problem.
-      The map below shows estimated overflow pressure radiating out from the BID under each scenario.
-    </p>
-    <div style="height:4px; width:48px; background:#ef4444; border-radius:2px; margin:24px 0 40px;"></div>
+    <div class="eyebrow reveal" style="color:#ff7b6b">Overflow Pressure</div>
+    <h2 class="section-title reveal d1" style="font-style:italic">What Happens When There's No Room?</h2>
+    <p class="section-subtitle reveal d2">Cars that can't find parking in the BID don't disappear — they spill outward into surrounding neighborhoods, turning a Gowanus problem into a Carroll Gardens, Park Slope, and Red Hook problem.</p>
+    <div class="section-rule reveal d3" style="background:#ef4444"></div>
 
-    <!-- Scenario toggle -->
-    <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-      <button onclick="setOverflowScenario('baseline')" id="btn-baseline"
-        style="padding:10px 22px; border-radius:100px; border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:#2196f3; color:#fff;">
-        2024 Baseline — Stable
-      </button>
-      <button onclick="setOverflowScenario('2029_no_action')" id="btn-2029_no_action"
-        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
-        2029 No Action — Stressed
-      </button>
-      <button onclick="setOverflowScenario('2034_no_action')" id="btn-2034_no_action"
-        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
-        2034 No Action — Crisis
-      </button>
-      <button onclick="setOverflowScenario('2034_garages')" id="btn-2034_garages"
-        style="padding:10px 22px; border-radius:100px; border:2px solid #444; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; background:transparent; color:#aaa;">
-        2034 Garage Only — Resolved
-      </button>
+    <div class="overflow-btns reveal d3">
+      <button onclick="setOverflowScenario('baseline')" id="btn-baseline" class="overflow-btn active" style="background:#2196f3;border-color:#2196f3;color:#fff">2026 Baseline — Stable</button>
+      <button onclick="setOverflowScenario('2029_no_action')" id="btn-2029_no_action" class="overflow-btn">2029 No Action — Stressed</button>
+      <button onclick="setOverflowScenario('2034_no_action')" id="btn-2034_no_action" class="overflow-btn">2034 No Action — Crisis</button>
+      <button onclick="setOverflowScenario('2034_garages')" id="btn-2034_garages" class="overflow-btn">2034 Garage Only — Resolved</button>
     </div>
 
-    <!-- Stats bar -->
-    <div id="overflow-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">BID Occupancy</div>
-        <div id="stat-occ" style="font-size:28px; font-weight:800; color:#2196f3;">~90%</div>
+    <div id="overflow-stats" class="reveal">
+      <div class="overflow-stat-card">
+        <div class="overflow-stat-label">BID Occupancy</div>
+        <div id="stat-occ" class="overflow-stat-val" style="color:#2196f3">~90%</div>
       </div>
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Overflow Cars / hr</div>
-        <div id="stat-overflow" style="font-size:28px; font-weight:800; color:#ef4444;">~12</div>
+      <div class="overflow-stat-card">
+        <div class="overflow-stat-label">Overflow Cars / hr</div>
+        <div id="stat-overflow" class="overflow-stat-val" style="color:#ef4444">~12</div>
       </div>
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Streets Affected</div>
-        <div id="stat-streets" style="font-size:28px; font-weight:800; color:#f59e0b;">Low</div>
+      <div class="overflow-stat-card">
+        <div class="overflow-stat-label">Streets Affected</div>
+        <div id="stat-streets" class="overflow-stat-val" style="color:#f59e0b">Low</div>
       </div>
-      <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:18px;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:6px;">Pressure Radius</div>
-        <div id="stat-radius" style="font-size:28px; font-weight:800; color:#a78bfa;">~1 block</div>
+      <div class="overflow-stat-card">
+        <div class="overflow-stat-label">Pressure Radius</div>
+        <div id="stat-radius" class="overflow-stat-val" style="color:#a78bfa">~1 block</div>
       </div>
     </div>
 
-    <!-- Map -->
-    <div style="position:relative; border-radius:12px; overflow:hidden; box-shadow:0 4px 40px rgba(0,0,0,.5);">
-      <div id="overflow-map" style="height:560px; background:#1a1a2e;"></div>
-      <div style="position:absolute; bottom:20px; right:20px; background:rgba(15,15,15,.9); backdrop-filter:blur(8px); border-radius:10px; padding:16px 20px; border:1px solid rgba(255,255,255,.1); min-width:200px;">
-        <div style="font-size:11px; font-weight:700; letter-spacing:.1em; color:#aaa; text-transform:uppercase; margin-bottom:12px;">Overflow Pressure</div>
-        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:#ccc;">
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#ef4444;border-radius:3px;"></span>Critical (inside BID)</div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#f97316;border-radius:3px;"></span>High (&lt; 200m)</div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#eab308;border-radius:3px;"></span>Medium (200–500m)</div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block;width:28px;height:5px;background:#22c55e;border-radius:3px;"></span>Low (&gt; 500m)</div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;"><span style="display:inline-block;width:10px;height:10px;background:#fff;border-radius:50%;opacity:.8;"></span>Overflow car</div>
-        </div>
+    <div class="overflow-map-wrap reveal">
+      <div id="overflow-map"></div>
+      <div class="overflow-map-legend">
+        <div class="overflow-map-legend-title">Overflow Pressure</div>
+        <div class="overflow-map-legend-item"><span style="display:inline-block;width:24px;height:4px;background:#ef4444;border-radius:2px"></span>Critical (inside BID)</div>
+        <div class="overflow-map-legend-item"><span style="display:inline-block;width:24px;height:4px;background:#f97316;border-radius:2px"></span>High (&lt; 200m)</div>
+        <div class="overflow-map-legend-item"><span style="display:inline-block;width:24px;height:4px;background:#eab308;border-radius:2px"></span>Medium (200–500m)</div>
+        <div class="overflow-map-legend-item"><span style="display:inline-block;width:24px;height:4px;background:#22c55e;border-radius:2px"></span>Low (&gt; 500m)</div>
+        <div class="overflow-map-legend-item"><span style="display:inline-block;width:8px;height:8px;background:#fff;border-radius:50%;opacity:.8"></span>Overflow car</div>
       </div>
-      <div id="overflow-label" style="position:absolute; top:20px; left:20px; background:rgba(239,68,68,.9); color:#fff; padding:8px 16px; border-radius:100px; font-size:13px; font-weight:700; display:none;">
-        ● Live overflow animation
-      </div>
+      <div id="overflow-label">● Live overflow animation</div>
     </div>
 
-    <!-- Explanation -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;">
-      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #ef4444;">
-        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#ef4444; margin-bottom:12px;">Without Garage Policy</h4>
-        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
-          By 2034, an estimated <strong style="color:#fff;">80–120 cars per hour</strong> are displaced from the BID during peak times.
-          They cruise into Carroll Gardens, Park Slope, and Red Hook — streets not designed to absorb that demand.
-          Residents of neighboring blocks lose parking they've relied on for decades.
-        </p>
+    <div class="overflow-explanation reveal">
+      <div class="overflow-card" style="border-left:3px solid #ef4444">
+        <div class="overflow-card-title" style="color:#ef4444">Without Garage Policy</div>
+        <p>By 2034, an estimated <strong>80–120 cars per hour</strong> are displaced from the BID during peak times. They cruise into Carroll Gardens, Park Slope, and Red Hook — streets not designed to absorb that demand. Residents of neighboring blocks lose parking they've relied on for decades.</p>
       </div>
-      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:28px; border-left:4px solid #22c55e;">
-        <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#22c55e; margin-bottom:12px;">With Garage Policy</h4>
-        <p style="font-size:14px; color:rgba(255,255,255,.6); line-height:1.7;">
-          The 2034 garage-only scenario reduces overflow to near zero. Cars that can't find a garage space
-          leave the area entirely rather than circling neighboring streets. The pressure radius collapses
-          from <strong style="color:#fff;">500m+ to under 50m</strong> — contained within the BID itself.
-        </p>
+      <div class="overflow-card" style="border-left:3px solid #22c55e">
+        <div class="overflow-card-title" style="color:#22c55e">With Garage Policy</div>
+        <p>The 2034 garage-only scenario reduces overflow to near zero. Cars that can't find a garage space leave the area entirely rather than circling neighboring streets. The pressure radius collapses from <strong>500m+ to under 50m</strong> — contained within the BID itself.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Prediction Charts ───────────────────────────────────────────────────── -->
+<!-- ── Prediction ── -->
 <section id="prediction">
+  <div class="section-num dark-num">06</div>
   <div class="container">
-    <div class="phase-badge" style="background:rgba(74,222,128,.1); color:#4ade80;">Phase 4 — Prediction</div>
-    <h2 class="section-title">What the Data Shows</h2>
-    <p class="section-subtitle">Simulation outputs across all five scenarios — comparing occupancy, overflow, and where residents actually end up parking over time.</p>
-    <div class="section-divider" style="background: #4ade80;"></div>
+    <div class="eyebrow reveal" style="color:#6ee7b7">Phase 4 — Prediction</div>
+    <h2 class="section-title reveal d1">What the Data Shows</h2>
+    <p class="section-subtitle reveal d2">Simulation outputs across all five scenarios — comparing occupancy, overflow, and where residents actually end up parking over time.</p>
+    <div class="section-rule reveal d3"></div>
 
-    <div class="charts-grid">
+    <div class="charts-grid reveal d2">
       <div class="chart-card">
         <h3>Street Occupancy % — All Scenarios</h3>
         <canvas id="chartOccupancy"></canvas>
@@ -1094,15 +1092,16 @@
       </div>
     </div>
   </div>
-  <div class="container" id="proposal" style="padding-top: 48px;">
-    <h2 class="section-title">Garages That Pay for Gowanus</h2>
-    <p class="section-subtitle">A BID-operated resident permit model turns parking from a burden into a self-sustaining revenue engine for the neighborhood.</p>
-    <div class="section-divider" style="background: rgba(255,255,255,.15);"></div>
 
-    <div class="timeline">
-      <div class="timeline-phase" style="background: rgba(33,150,243,.12); border-radius: 12px 0 0 12px;">
-        <div class="timeline-year" style="color: var(--blue);">2024</div>
-        <div class="timeline-label" style="color: var(--blue);">Today</div>
+  <div class="container" id="proposal" style="padding-top:72px">
+    <h2 class="section-title reveal" style="font-style:italic">Garages That Pay for Gowanus</h2>
+    <p class="section-subtitle reveal d1">A BID-operated resident permit model turns parking from a burden into a self-sustaining revenue engine for the neighborhood.</p>
+    <div class="section-rule reveal d2"></div>
+
+    <div class="timeline reveal d2">
+      <div class="timeline-phase" style="background:rgba(33,150,243,.1);border-radius:8px 0 0 8px">
+        <div class="timeline-year" style="color:var(--blue)">2026</div>
+        <div class="timeline-label" style="color:var(--blue)">Today</div>
         <ul class="timeline-items">
           <li>2,075 street spots · 90% full</li>
           <li>Street-only parking</li>
@@ -1110,9 +1109,9 @@
           <li>System already at capacity</li>
         </ul>
       </div>
-      <div class="timeline-phase" style="background: rgba(240,192,64,.12);">
-        <div class="timeline-year" style="color: var(--gold);">2029</div>
-        <div class="timeline-label" style="color: var(--gold);">Mixed Policy</div>
+      <div class="timeline-phase" style="background:rgba(184,120,0,.1)">
+        <div class="timeline-year" style="color:var(--gold)">2029</div>
+        <div class="timeline-label" style="color:var(--gold)">Mixed Policy</div>
         <ul class="timeline-items">
           <li>4 garages open · 320 spots</li>
           <li>Resident permits launch at ~$900/yr</li>
@@ -1120,9 +1119,9 @@
           <li>BID fund capitalized</li>
         </ul>
       </div>
-      <div class="timeline-phase" style="background: rgba(26,122,69,.15); border-radius: 0 12px 12px 0;">
-        <div class="timeline-year" style="color: var(--green);">2034</div>
-        <div class="timeline-label" style="color: var(--green);">Garage Only</div>
+      <div class="timeline-phase" style="background:rgba(26,122,69,.12);border-radius:0 8px 8px 0">
+        <div class="timeline-year" style="color:var(--green)">2034</div>
+        <div class="timeline-label" style="color:var(--green)">Garage Only</div>
         <ul class="timeline-items">
           <li>7 garages · 700+ spots</li>
           <li>Street parking eliminated</li>
@@ -1132,139 +1131,137 @@
       </div>
     </div>
 
-    <h3 style="font-size:22px; font-weight:800; margin: 64px 0 8px; color: var(--white);">The Revenue Flow</h3>
-    <p style="color:rgba(255,255,255,.5); margin-bottom: 0; font-size:15px;">Permit fees and visitor rates pool into a BID fund — then flow back into the streets that generated them.</p>
-    <div class="revenue-flow">
-      <div class="revenue-col" style="--accent-color: var(--blue);">
-        <div class="revenue-box" style="border-color: var(--blue);">
-          <div class="revenue-box-label" style="color: var(--blue);">Resident Permits</div>
+    <h3 style="font-family:var(--font-ui);font-size:20px;font-weight:700;margin:64px 0 8px;color:#fff" class="reveal">The Revenue Flow</h3>
+    <p style="color:rgba(255,255,255,.4);margin-bottom:0;font-size:13px;font-family:var(--font-mono);letter-spacing:.04em" class="reveal d1">Permit fees and visitor rates pool into a BID fund — then flow back into the streets that generated them.</p>
+    <div class="revenue-flow reveal d2">
+      <div class="revenue-col" style="--accent-color:var(--blue)">
+        <div class="revenue-box" style="border-left-color:var(--blue)">
+          <div class="revenue-box-label" style="color:var(--blue)">Resident Permits</div>
           <div class="revenue-box-sub">~$900/yr subsidized vs. $2,400+ market</div>
         </div>
-        <div class="revenue-box" style="border-color: var(--gold);">
-          <div class="revenue-box-label" style="color: var(--gold);">Visitor Daily Rates</div>
+        <div class="revenue-box" style="border-left-color:var(--gold)">
+          <div class="revenue-box-label" style="color:var(--gold)">Visitor Daily Rates</div>
           <div class="revenue-box-sub">Pay-per-use at BID-operated garages</div>
         </div>
       </div>
       <div class="revenue-arrow">→</div>
-      <div class="revenue-col" style="--accent-color: var(--red);">
-        <div class="revenue-box" style="border-color: var(--red); text-align:center; padding: 24px;">
-          <div class="revenue-box-label" style="color: var(--red); font-size:13px;">BID Parking Fund</div>
-          <div style="font-size: 28px; font-weight:900; color: var(--red); margin-top:4px;">$</div>
-          <div class="revenue-box-sub" style="text-align:center;">Pooled & BID-managed</div>
+      <div class="revenue-col" style="--accent-color:var(--red)">
+        <div class="revenue-box" style="border-left-color:var(--red);text-align:center;padding:24px">
+          <div class="revenue-box-label" style="color:var(--red);font-size:10px">BID Parking Fund</div>
+          <div style="font-family:var(--font-display);font-size:40px;font-weight:700;color:var(--red);margin-top:4px">$</div>
+          <div class="revenue-box-sub" style="text-align:center">Pooled &amp; BID-managed</div>
         </div>
       </div>
       <div class="revenue-arrow">→</div>
-      <div class="revenue-col" style="--accent-color: var(--green);">
-        <div class="revenue-box" style="border-color: var(--green);">
-          <div class="revenue-box-label" style="color: var(--green);">Garage Maintenance</div>
-          <div class="revenue-box-sub">Operations & capital upkeep</div>
+      <div class="revenue-col" style="--accent-color:var(--green)">
+        <div class="revenue-box" style="border-left-color:var(--green)">
+          <div class="revenue-box-label" style="color:var(--green)">Garage Maintenance</div>
+          <div class="revenue-box-sub">Operations &amp; capital upkeep</div>
         </div>
-        <div class="revenue-box" style="border-color: var(--green);">
-          <div class="revenue-box-label" style="color: var(--green);">BID Operations</div>
-          <div class="revenue-box-sub">Staff, programs & admin</div>
+        <div class="revenue-box" style="border-left-color:var(--green)">
+          <div class="revenue-box-label" style="color:var(--green)">BID Operations</div>
+          <div class="revenue-box-sub">Staff, programs &amp; admin</div>
         </div>
-        <div class="revenue-box" style="border-color: var(--green);">
-          <div class="revenue-box-label" style="color: var(--green);">Public Realm Fund</div>
-          <div class="revenue-box-sub">Streetscape & waterfront access</div>
+        <div class="revenue-box" style="border-left-color:var(--green)">
+          <div class="revenue-box-label" style="color:var(--green)">Public Realm Fund</div>
+          <div class="revenue-box-sub">Streetscape &amp; waterfront access</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Engagement ─────────────────────────────────────────────────────────── -->
+<!-- ── Engagement ── -->
 <section id="engagement">
+  <div class="section-num">07</div>
   <div class="container-wide">
-    <div class="phase-badge" style="background:rgba(26,122,69,.1); color: var(--green);">Phase 5 — Consensus</div>
-    <h2 class="section-title">Bringing the Community Along</h2>
-    <p class="section-subtitle">The design process only works if it is transparent and inclusive. Here is how we package each phase of this work for the people it affects.</p>
-    <div class="section-divider" style="background: var(--green);"></div>
+    <div class="eyebrow reveal" style="color:var(--sage)">Phase 5 — Consensus</div>
+    <h2 class="section-title reveal d1">Bringing the Community Along</h2>
+    <p class="section-subtitle reveal d2">The design process only works if it is transparent and inclusive. Here is how we package each phase of this work for the people it affects.</p>
+    <div class="section-rule reveal d3" style="background:var(--sage)"></div>
 
-    <!-- Buy-in strategy tabs -->
-    <div style="margin-top: 48px;">
-      <div id="buyin-tabs" style="display: flex; gap: 0; border-bottom: 1px solid var(--gray-200);">
-        <button onclick="buyinTab(0)" class="buyin-tab buyin-tab-active" style="background:none; border:none; padding: 12px 24px 12px 0; font-size:14px; font-weight:700; color:var(--gray-800); cursor:pointer; border-bottom: 2px solid var(--green); margin-bottom:-1px; transition: color .2s;">A tiered strategy for buy-in</button>
-        <button onclick="buyinTab(1)" class="buyin-tab" style="background:none; border:none; padding: 12px 24px; font-size:14px; font-weight:700; color:var(--gray-400); cursor:pointer; border-bottom: 2px solid transparent; margin-bottom:-1px; transition: color .2s;">Simulation imagery</button>
-        <button onclick="buyinTab(2)" class="buyin-tab" style="background:none; border:none; padding: 12px 24px; font-size:14px; font-weight:700; color:var(--gray-400); cursor:pointer; border-bottom: 2px solid transparent; margin-bottom:-1px; transition: color .2s;">Future iteration</button>
+    <div class="buyin-wrap reveal d2">
+      <div class="buyin-tabs-bar" id="buyin-tabs">
+        <button onclick="buyinTab(0)" class="buyin-tab buyin-tab-active">A tiered strategy for buy-in</button>
+        <button onclick="buyinTab(1)" class="buyin-tab">Simulation imagery</button>
+        <button onclick="buyinTab(2)" class="buyin-tab">Future iteration</button>
       </div>
-
-      <div id="buyin-panels" style="height: 260px; overflow: hidden; position: relative;">
-        <div class="buyin-panel" style="background: var(--white); border-radius: 0 0 var(--radius) var(--radius); border: 1px solid var(--gray-200); border-top: none; padding: 36px;">
-          <div style="font-size: 17px; font-weight: 800; color: var(--gray-800); margin-bottom: 16px;">Stakeholder alignment</div>
-          <p style="font-size: 14px; color: var(--gray-600); line-height: 1.7; margin-bottom: 10px;"><strong style="color: var(--gray-800);">Gowanus Residents and Businesses:</strong> Assessing tradeoffs (e.g., greater distance to parked vehicle, impacts on inventory movement in and out of storefronts) to find an optimal parking re-allocation.</p>
-          <p style="font-size: 14px; color: var(--gray-600); line-height: 1.7;"><strong style="color: var(--gray-800);">NYC Agencies:</strong> Getting permits from the DOB and DOT to build more garages and remove curb-side parking. Additionally, advocating to the city for fewer parking requirements in new developments — helping transition to a facility increase in demand and a reduction in street parking.</p>
+      <div class="buyin-panels" id="buyin-panels">
+        <div class="buyin-panel">
+          <div class="buyin-panel-title">Stakeholder alignment</div>
+          <p><strong>Gowanus Residents and Businesses:</strong> Assessing tradeoffs (e.g., greater distance to parked vehicle, impacts on inventory movement in and out of storefronts) to find an optimal parking re-allocation.</p>
+          <p><strong>NYC Agencies:</strong> Getting permits from the DOB and DOT to build more garages and remove curb-side parking. Additionally, advocating to the city for fewer parking requirements in new developments.</p>
         </div>
-        <div class="buyin-panel" style="display:none; background: var(--white); border-radius: 0 0 var(--radius) var(--radius); border: 1px solid var(--gray-200); border-top: none; padding: 36px;">
-          <div style="font-size: 17px; font-weight: 800; color: var(--gray-800); margin-bottom: 16px;">Showing, not telling</div>
-          <p style="font-size: 14px; color: var(--gray-600); line-height: 1.7;">Our simulation-generated imagery helps stakeholders understand the potential outcomes of decisions more clearly. The higher the fidelity of these simulations, the more we can expect detailed, specific feedback to improve our design process.</p>
+        <div class="buyin-panel" style="display:none">
+          <div class="buyin-panel-title">Showing, not telling</div>
+          <p>Our simulation-generated imagery helps stakeholders understand the potential outcomes of decisions more clearly. The higher the fidelity of these simulations, the more we can expect detailed, specific feedback to improve our design process.</p>
         </div>
-        <div class="buyin-panel" style="display:none; background: var(--white); border-radius: 0 0 var(--radius) var(--radius); border: 1px solid var(--gray-200); border-top: none; padding: 36px;">
-          <div style="font-size: 17px; font-weight: 800; color: var(--gray-800); margin-bottom: 16px;">Live tools, live feedback</div>
-          <p style="font-size: 14px; color: var(--gray-600); line-height: 1.7; margin-bottom: 12px;">By giving stakeholders the tools to tangibly interact with our digital prototypes, they can bring their questions and concerns to life:</p>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
-            <li style="font-size: 14px; color: var(--gray-600); line-height: 1.7; padding-left: 16px; position: relative;"><span style="position:absolute; left:0; color: var(--green); font-weight:700;">→</span> What happens if we move this parking garage to the other corner of the BID boundary?</li>
-            <li style="font-size: 14px; color: var(--gray-600); line-height: 1.7; padding-left: 16px; position: relative;"><span style="position:absolute; left:0; color: var(--green); font-weight:700;">→</span> Will foot traffic be routed away from my business if we remove street parking on the adjoining street?</li>
-            <li style="font-size: 14px; color: var(--gray-600); line-height: 1.7; padding-left: 16px; position: relative;"><span style="position:absolute; left:0; color: var(--green); font-weight:700;">→</span> How far will I need to walk to get to my car every day if my parking spot gets moved to a garage?</li>
+        <div class="buyin-panel" style="display:none">
+          <div class="buyin-panel-title">Live tools, live feedback</div>
+          <p>By giving stakeholders the tools to tangibly interact with our digital prototypes, they can bring their questions and concerns to life:</p>
+          <ul>
+            <li><span>→</span> What happens if we move this parking garage to the other corner of the BID boundary?</li>
+            <li><span>→</span> Will foot traffic be routed away from my business if we remove street parking on the adjoining street?</li>
+            <li><span>→</span> How far will I need to walk to get to my car every day if my parking spot gets moved to a garage?</li>
           </ul>
         </div>
       </div>
     </div>
 
     <script>
-      window.buyinTab = function(i) {
-        var tabs = document.querySelectorAll('.buyin-tab');
-        var panels = document.querySelectorAll('.buyin-panel');
-        tabs.forEach(function(t, idx) {
-          var active = idx === i;
-          t.style.color = active ? 'var(--gray-800)' : 'var(--gray-400)';
-          t.style.borderBottom = active ? '2px solid var(--green)' : '2px solid transparent';
-        });
-        panels.forEach(function(p, idx) {
-          p.style.display = idx === i ? 'block' : 'none';
-        });
-      };
+    window.buyinTab = function(i) {
+      var tabs = document.querySelectorAll('.buyin-tab');
+      var panels = document.querySelectorAll('.buyin-panel');
+      tabs.forEach(function(t,idx){
+        var active = idx===i;
+        t.style.color = active ? 'var(--ink)' : 'var(--dust)';
+        t.style.borderBottom = active ? '2px solid var(--sage)' : '2px solid transparent';
+        t.classList.toggle('buyin-tab-active',active);
+      });
+      panels.forEach(function(p,idx){ p.style.display = idx===i ? 'block' : 'none'; });
+    };
     </script>
 
-    <h3 style="font-size:22px; font-weight:800; margin: 64px 0 8px;">The 4-Phase Engagement Process</h3>
-    <p style="color:var(--gray-600); margin-bottom: 0; font-size:15px;">A structured sequence that moves from listening to co-designing to closing the loop.</p>
-    <div class="process-steps" style="margin-top:32px;">
+    <h3 style="font-family:var(--font-ui);font-size:20px;font-weight:700;margin:64px 0 8px" class="reveal">The 4-Phase Engagement Process</h3>
+    <p style="color:var(--smoke);font-size:13px;font-family:var(--font-body)" class="reveal d1">A structured sequence that moves from listening to co-designing to closing the loop.</p>
+    <div class="process-steps reveal d2">
       <div class="process-step">
         <div class="step-num">01</div>
-        <div class="step-title" style="color:var(--blue);">Collect</div>
+        <div class="step-title" style="color:var(--blue)">Collect</div>
         <div class="step-desc">Sidewalk surveys and stakeholder identification at every block of the BID. Identify parking behavior and create a physical mapping of cars and people in Gowanus.</div>
       </div>
       <div class="process-step">
         <div class="step-num">02</div>
-        <div class="step-title" style="color:var(--blue);">Listen First</div>
+        <div class="step-title" style="color:var(--blue)">Listen First</div>
         <div class="step-desc">Discuss proposal with most impacted stakeholders and determine feasibility of parking solutions.</div>
       </div>
       <div class="process-step">
         <div class="step-num">03</div>
-        <div class="step-title" style="color:var(--gold);">Show the Scenarios</div>
+        <div class="step-title" style="color:var(--amber)">Show the Scenarios</div>
         <div class="step-desc">Present findings on public opinions and model simulations to community leaders. Iterate and improve on findings as we collaboratively draft a plan to present to agencies.</div>
       </div>
       <div class="process-step">
         <div class="step-num">04</div>
-        <div class="step-title" style="color:var(--green);">Decide Together</div>
+        <div class="step-title" style="color:var(--sage)">Decide Together</div>
         <div class="step-desc">Design and showcase live simulation demos for the public, in preparation of community board presentations.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<!-- ── Footer ── -->
 <footer>
   <div>
-    <strong style="color:rgba(255,255,255,.7);">Street Knowledge</strong> — Gowanus BID Parking Strategy<br>
-    INFO-5420 Urban Design Process · Cornell Tech · Spring 2026
+    <span class="footer-brand">Streets for the People</span>
+    <span class="footer-sub">Gowanus BID Parking Strategy · INFO-5420 Urban Design Process · Cornell Tech · Spring 2026</span>
   </div>
-  <div style="text-align:right;">
+  <div class="footer-right">
     Built with GAMA Platform · Leaflet.js · Chart.js<br>
     Real GIS data — Gowanus BID, Brooklyn, NY
   </div>
 </footer>
 
-<!-- ── Scripts ────────────────────────────────────────────────────────────── -->
+<!-- ── Scripts ── -->
 <script>
 // ── Leaflet Map ──────────────────────────────────────────────────────────────
 const map = L.map('map', { zoomControl: true }).setView([40.6726, -73.9897], 15);
@@ -1342,7 +1339,7 @@ new Chart(document.getElementById('chartOccupancy'), {
   data: {
     labels: cycles,
     datasets: [
-      { label: '2024 Baseline',      data: cycles.map(c => 90 + Math.sin(c/30)*2 + Math.random()*1), borderColor: '#2196f3', tension: 0.4, borderWidth: 2, pointRadius: 0 },
+      { label: '2026 Baseline',      data: cycles.map(c => 90 + Math.sin(c/30)*2 + Math.random()*1), borderColor: '#2196f3', tension: 0.4, borderWidth: 2, pointRadius: 0 },
       { label: '2029 No Action',     data: cycles.map(c => Math.min(99, 94 + c/100 + Math.random()*1.5)), borderColor: '#f59e0b', tension: 0.4, borderWidth: 2, pointRadius: 0 },
       { label: '2029 Mixed Garages', data: cycles.map(c => 72 - c/200 + Math.sin(c/20)*2 + Math.random()*2), borderColor: '#22c55e', tension: 0.4, borderWidth: 2.5, pointRadius: 0 },
       { label: '2034 No Action',     data: cycles.map(c => Math.min(99.5, 97 + c/150 + Math.random()*0.8)), borderColor: '#ef4444', tension: 0.4, borderWidth: 2, pointRadius: 0 },
@@ -1365,7 +1362,7 @@ new Chart(document.getElementById('chartOverflow'), {
   data: {
     labels: cycles,
     datasets: [
-      { label: '2024 Baseline',      data: cycles.map(c => Math.floor(c * 0.05 + Math.random()*2)), borderColor: '#2196f3', tension: 0.4, borderWidth: 2, pointRadius: 0 },
+      { label: '2026 Baseline',      data: cycles.map(c => Math.floor(c * 0.05 + Math.random()*2)), borderColor: '#2196f3', tension: 0.4, borderWidth: 2, pointRadius: 0 },
       { label: '2029 No Action',     data: cycles.map(c => Math.floor(c * 0.45 + Math.random()*5)), borderColor: '#f59e0b', tension: 0.4, borderWidth: 2, pointRadius: 0 },
       { label: '2029 Mixed Garages', data: cycles.map(c => Math.floor(c * 0.08 + Math.random()*2)), borderColor: '#22c55e', tension: 0.4, borderWidth: 2.5, pointRadius: 0 },
       { label: '2034 No Action',     data: cycles.map(c => Math.floor(c * 1.1 + Math.random()*8)), borderColor: '#ef4444', tension: 0.4, borderWidth: 2, pointRadius: 0 },
@@ -1439,10 +1436,10 @@ const BID_CENTER = L.latLng(40.6726, -73.9897);
 const SCENARIOS = {
   baseline: {
     bidColor: '#2196f3', bidOpacity: 0.15,
-    overflowPerHr: 12, label: '2024 Baseline — Stable',
+    overflowPerHr: 12, label: '2026 Baseline — Stable',
     occ: '~90%', streets: 'Minimal', radius: '~1 block',
     occColor: '#2196f3',
-    pressureMultiplier: 0.1,   // how strongly roads outside are colored
+    pressureMultiplier: 0.1,
     particleCount: 3,
     statColor: '#2196f3'
   },
@@ -1484,10 +1481,8 @@ let particles = [];
 let surroundingRoadsData = null;
 let bidBoundaryData = null;
 
-// Pressure → color (green=low, yellow=med, orange=high, red=critical)
+// Pressure → color
 function pressureColor(normalizedDist, multiplier) {
-  // normalizedDist: 0=inside BID, 1=far away
-  // multiplier: scenario severity
   const p = Math.max(0, 1 - normalizedDist) * multiplier;
   if (p > 0.8)  return { color: '#ef4444', weight: 4, opacity: 0.95 };
   if (p > 0.55) return { color: '#f97316', weight: 3, opacity: 0.85 };
@@ -1497,11 +1492,10 @@ function pressureColor(normalizedDist, multiplier) {
 }
 
 function distFromBID(latlng) {
-  return BID_CENTER.distanceTo(latlng); // metres
+  return BID_CENTER.distanceTo(latlng);
 }
 
 async function initOverflowMap() {
-  // Load surrounding roads
   surroundingRoadsData = await loadLayer('data/surrounding_roads.geojson');
   bidBoundaryData      = await loadLayer('data/bid_boundary.geojson');
   renderOverflowScenario('baseline');
@@ -1510,13 +1504,11 @@ async function initOverflowMap() {
 function renderOverflowScenario(scenarioKey) {
   const sc = SCENARIOS[scenarioKey];
 
-  // Clear existing
   if (roadsLayer)  { overflowMap.removeLayer(roadsLayer);  roadsLayer = null; }
   if (bidLayer)    { overflowMap.removeLayer(bidLayer);     bidLayer = null; }
   if (particleLayer){ overflowMap.removeLayer(particleLayer); particleLayer = null; }
   if (particleAnimId) { cancelAnimationFrame(particleAnimId); particles = []; }
 
-  // BID boundary fill
   if (bidBoundaryData) {
     bidLayer = L.geoJSON(bidBoundaryData, {
       style: {
@@ -1527,7 +1519,6 @@ function renderOverflowScenario(scenarioKey) {
     }).addTo(overflowMap);
   }
 
-  // Surrounding roads colored by pressure + distance
   if (surroundingRoadsData) {
     roadsLayer = L.geoJSON(surroundingRoadsData, {
       style: feature => {
@@ -1537,7 +1528,6 @@ function renderOverflowScenario(scenarioKey) {
           ? coords[midIdx][0] : coords[midIdx];
         const latlng = L.latLng(mid[1], mid[0]);
         const dist = distFromBID(latlng);
-        // Normalize: 0 = at BID centre, 1 = 800m away
         const norm = Math.min(1, dist / 800);
         return pressureColor(norm, sc.pressureMultiplier);
       },
@@ -1548,16 +1538,13 @@ function renderOverflowScenario(scenarioKey) {
         const dist = Math.round(distFromBID(L.latLng(mid[1], mid[0])));
         const pressure = Math.max(0, (1 - dist/800) * sc.pressureMultiplier * 100).toFixed(0);
         layer.bindTooltip(
-          `<strong>${f.properties.name || 'Street'}</strong><br>
-           Distance from BID: ${dist}m<br>
-           Overflow pressure: ${pressure}%`,
+          `<strong>${f.properties.name || 'Street'}</strong><br>Distance from BID: ${dist}m<br>Overflow pressure: ${pressure}%`,
           { sticky: true, className: 'overflow-tooltip' }
         );
       }
     }).addTo(overflowMap);
   }
 
-  // Animated overflow particles
   if (sc.particleCount > 0) {
     document.getElementById('overflow-label').style.display = 'block';
     spawnParticles(sc);
@@ -1565,7 +1552,6 @@ function renderOverflowScenario(scenarioKey) {
     document.getElementById('overflow-label').style.display = 'none';
   }
 
-  // Update stats
   document.getElementById('stat-occ').textContent = sc.occ;
   document.getElementById('stat-occ').style.color = sc.statColor;
   document.getElementById('stat-overflow').textContent = `~${sc.overflowPerHr}`;
@@ -1573,7 +1559,6 @@ function renderOverflowScenario(scenarioKey) {
   document.getElementById('stat-radius').textContent = sc.radius;
 }
 
-// BID boundary approximate ring of spawn points
 const BID_RING = [
   [40.6755, -73.9920], [40.6748, -73.9905], [40.6740, -73.9892],
   [40.6732, -73.9882], [40.6720, -73.9876], [40.6708, -73.9880],
@@ -1586,13 +1571,12 @@ function spawnParticles(sc) {
   particles = [];
   particleLayer = L.layerGroup().addTo(overflowMap);
 
-  // Directions cars drift outward from BID
   const directions = [
-    { dlat: 0.0004, dlng: -0.0006 }, // Carroll Gardens (west)
-    { dlat: 0.0005, dlng:  0.0003 }, // Park Slope (north-east)
-    { dlat: -0.0004, dlng:-0.0004 }, // Red Hook (south-west)
-    { dlat:  0.0003, dlng:  0.0006 }, // Gowanus north
-    { dlat: -0.0005, dlng:  0.0004 }, // south
+    { dlat: 0.0004, dlng: -0.0006 },
+    { dlat: 0.0005, dlng:  0.0003 },
+    { dlat: -0.0004, dlng:-0.0004 },
+    { dlat:  0.0003, dlng:  0.0006 },
+    { dlat: -0.0005, dlng:  0.0004 },
   ];
 
   for (let i = 0; i < sc.particleCount; i++) {
@@ -1630,7 +1614,6 @@ function spawnParticles(sc) {
       p.marker.setStyle({ fillOpacity: opacity * 0.9 });
 
       if (p.life >= p.maxLife) {
-        // Reset particle to a new spawn point
         const spawn = BID_RING[Math.floor(Math.random() * BID_RING.length)];
         p.lat = spawn[0]; p.lng = spawn[1];
         p.life = 0;
@@ -1644,30 +1627,41 @@ function spawnParticles(sc) {
 
 window.setOverflowScenario = function(key) {
   currentScenario = key;
-  // Update button styles
   Object.keys(SCENARIOS).forEach(k => {
     const btn = document.getElementById(`btn-${k}`);
     if (!btn) return;
     if (k === key) {
       btn.style.background = SCENARIOS[k].statColor;
+      btn.style.borderColor = SCENARIOS[k].statColor;
       btn.style.color = '#fff';
-      btn.style.border = 'none';
+      btn.classList.add('active');
     } else {
       btn.style.background = 'transparent';
-      btn.style.color = '#aaa';
-      btn.style.border = '2px solid #444';
+      btn.style.borderColor = 'rgba(255,255,255,.15)';
+      btn.style.color = 'rgba(255,255,255,.4)';
+      btn.classList.remove('active');
     }
   });
   renderOverflowScenario(key);
 };
 
-// Add tooltip CSS
 const tooltipStyle = document.createElement('style');
-tooltipStyle.textContent = `.overflow-tooltip { background:rgba(15,15,15,.95); color:#fff; border:1px solid rgba(255,255,255,.15); font-size:12px; border-radius:8px; }
-.overflow-tooltip::before { border-top-color: rgba(255,255,255,.15); }`;
+tooltipStyle.textContent = `.overflow-tooltip { background:rgba(10,9,8,.95); color:#fff; border:1px solid rgba(255,255,255,.12); font-size:11px; border-radius:6px; font-family:'IBM Plex Mono',monospace; }`;
 document.head.appendChild(tooltipStyle);
 
 initOverflowMap();
+
+// ── Scroll reveal ──────────────────────────────────────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el => io.observe(el));
+
+// ── Nav progress bar ───────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+  document.getElementById('nav-progress-fill').style.transform = `scaleX(${pct})`;
+}, { passive: true });
 </script>
 </body>
 </html>
