@@ -258,6 +258,24 @@ section{padding:104px 0;position:relative}
   position:relative;font-family:var(--font-display);font-size:clamp(17px,2vw,22px);
   font-style:italic;font-weight:400;color:#fff;line-height:1.7;max-width:880px
 }
+.communities-panel{
+  margin-top:8px;
+}
+.communities-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.community-summary{
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);
+  border-radius:8px;padding:22px;position:relative;overflow:hidden;
+  box-shadow:0 8px 28px rgba(0,0,0,.18);
+}
+.community-summary::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--community-color);opacity:.9
+}
+.community-summary h4{
+  font-family:var(--font-ui);font-size:16px;font-weight:700;color:#fff;
+  margin-bottom:10px;line-height:1.25;
+}
+.community-summary p{font-size:13px;color:rgba(255,255,255,.58);line-height:1.75}
 .cars-grid{display:grid;grid-template-columns:1fr .95fr 1fr;gap:16px;margin-bottom:48px;align-items:stretch}
 .cars-col{display:grid;gap:16px}
 .cars-card{
@@ -647,7 +665,7 @@ footer{
   .intro-grid,.cars-grid,.scenario-layout,.scenario-layout.reverse,
   .charts-grid,.timeline,.principles-grid,.overflow-explanation,
   .tale-grid,.process-steps,.revenue-flow,.consensus-vote-grid,
-  .approach-layout,.support-grid,.community-grid{
+  .approach-layout,.support-grid,.community-grid,.communities-grid{
     grid-template-columns:1fr;direction:ltr
   }
   .scenario-layout.reverse>*{direction:ltr}
@@ -762,8 +780,27 @@ footer{
 
     <div style="margin-bottom:48px" class="reveal">
       <h3 style="font-family:var(--font-ui);font-size:22px;font-weight:700;margin-bottom:12px">The People of Gowanus</h3>
-      <p style="font-size:14px;color:var(--smoke);line-height:1.8;margin-bottom:24px">The rezoning brings together four distinct communities, each with different relationships to the neighborhood's streets and parking.</p>
-      <img src="images/The people of Gowanus.jpeg" alt="The people of Gowanus" style="width:100%;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.1);display:block">
+      <p style="font-size:14px;color:var(--smoke);line-height:1.8;margin-bottom:24px">Gowanus is not one public. The BID brings together communities with different resources, expectations, and relationships to the street. Because public space maintenance is its largest expense, the waterfront cannot serve new development alone — it must become a shared civic space that every group feels belongs to them.</p>
+      <div class="communities-panel">
+        <div class="communities-grid">
+          <div class="community-summary" style="--community-color:var(--blue)">
+            <h4>New Residents (~20K)</h4>
+            <p>Professionals and higher-income households moving into luxury waterfront and 4th Ave buildings, expecting a clean, green waterfront for leisure and recreation.</p>
+          </div>
+          <div class="community-summary" style="--community-color:var(--teal)">
+            <h4>Public Housing Residents</h4>
+            <p>Gowanus Houses in the NW corner — first time ever a NYC BID includes social housing in its boundaries. Residents gain access to BID services (sanitation, beautification).</p>
+          </div>
+          <div class="community-summary" style="--community-color:var(--amber)">
+            <h4>Long-term Residents &amp; Businesses</h4>
+            <p>Existing residents and local businesses with long-standing ties, navigating construction disruption and parking frustration daily.</p>
+          </div>
+          <div class="community-summary" style="--community-color:var(--red)">
+            <h4>Industrial &amp; Artists</h4>
+            <p>Remaining industrial users and artists, some living in studios unofficially to stay in the area.</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div style="margin-bottom:36px" class="reveal">
